@@ -1,57 +1,7 @@
 'use strict';
-import dialogflow from 'dialogflow';
+import facebookAPI from '../services/facebook';
+import utils from '../utils';
 import config from '../config/variables';
-import utils from './utils';
-import receive from './receive';
-import graphApi from './graph-api';
-
-const credentials = {
-    credentials: {
-        private_key: config.GOOGLE_PRIVATE_KEY,
-        client_email: config.GOOGLE_CLIENT_EMAIL
-    }
-};
-
-const sessionClient = new dialogflow.SessionsClient(credentials);
-
-/**
- * Send all messages to DialogFlow
- * @param {*} sender
- * @param {*} textString
- * @param {*} params
- */
-const sendToDialogFlow = async (sender, textString, params) => {
-    sendTypingOn(sender);
-    
-    const sessionPath = sessionClient.sessionPath(
-        config.GOOGLE_PROJECT_ID,
-        utils.sessionIds.get(sender)
-    );
-
-    try {
-        const request = {
-            session: sessionPath,
-            queryInput: {
-                text: {
-                    text: textString,
-                    languageCode: config.GOOGLE_LANGUAGE_CODE
-                }
-            },
-            queryParams: {
-                payload: {
-                    data: params,
-                }
-            }
-        };
-        
-        const responses = await sessionClient.detectIntent(request);
-        const result = responses[0].queryResult;
-        receive.handleDialogFlowResponse(sender, result);
-    } catch (e) {
-        console.log('❌ [BOT CONSILIO] Error in process message in Dialogflow:');
-        console.log(e);
-    }
-};
 
 /**
  * Send action typing on using the Service API
@@ -65,7 +15,7 @@ const sendTypingOn = recipientId => {
         sender_action: 'typing_on'
     };
 
-    graphApi.sendCall(messageData);
+    facebookAPI.sendCall(messageData);
 };
 
 /**
@@ -80,7 +30,7 @@ const sendTypingOff = recipientId => {
         sender_action: 'typing_off'
     };
 
-    graphApi.sendCall(messageData);
+    facebookAPI.sendCall(messageData);
 };
 
 /**
@@ -97,7 +47,7 @@ const sendTextMessage = (recipientId, text) => {
             text: text
         }
     };
-    graphApi.sendCall(messageData);
+    facebookAPI.sendCall(messageData);
 };
 
 /**
@@ -116,7 +66,29 @@ const sendTextWithPersona = (recipientId, text, persona_id) => {
             persona_id: persona_id
         }
     };
-    graphApi.sendCall(messageData);
+    facebookAPI.sendCall(messageData);
+};
+
+/*
+     * Send a Gif using the Send API.
+     *
+     */
+const sendGifMessage = (recipientId, GifName) => {
+    var messageData = {
+        recipient: {
+            id: recipientId
+        },
+        message: {
+            attachment: {
+                type: 'image',
+                payload: {
+                    url: config.APP_URL + GifName
+                }
+            }
+        }
+    };
+
+    facebookAPI.sendCall(messageData);
 };
 
 /**
@@ -136,7 +108,31 @@ const sendQuickReply = (recipientId, text, replies, metadata) => {
         }
     };
 
-    graphApi.sendCall(messageData);
+    facebookAPI.sendCall(messageData);
+};
+
+/*
+     * Send a button message using the Send API.
+     *
+     */
+const sendButtonMessage = (recipientId, text, buttons) => {
+    var messageData = {
+        recipient: {
+            id: recipientId
+        },
+        message: {
+            attachment: {
+                type: 'template',
+                payload: {
+                    template_type: 'button',
+                    text: text,
+                    buttons: buttons
+                }
+            }
+        }
+    };
+
+    facebookAPI.sendCall(messageData);
 };
 
 /**
@@ -159,15 +155,16 @@ const sendGenericMessage = (recipientId, elements) => {
             }
         }
     };
-    graphApi.sendCall(messageData);
+    facebookAPI.sendCall(messageData);
 };
 
 export default {
-    sendToDialogFlow,
     sendTypingOn,
     sendTypingOff,
     sendTextMessage,
     sendTextWithPersona,
     sendQuickReply,
+    sendButtonMessage,
+    sendGifMessage,
     sendGenericMessage
 };

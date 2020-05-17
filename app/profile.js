@@ -1,16 +1,16 @@
 import config from '../config/variables';
-import graphApi from './graph-api';
+import facebookAPI from '../services/facebook';
 
 export default {
 
     setWebhook() {
-        graphApi.callSubscriptionsAPI();
-        graphApi.callSubscribedApps();
+        facebookAPI.callSubscriptionsAPI();
+        facebookAPI.callSubscribedApps();
     },
 
     setPageFeedWebhook() {
-        graphApi.callSubscriptionsAPI('feed');
-        graphApi.callSubscribedApps('feed');
+        facebookAPI.callSubscriptionsAPI('feed');
+        facebookAPI.callSubscribedApps('feed');
     },
 
     setThread() {
@@ -20,7 +20,7 @@ export default {
             ...this.getPersistentMenu()
         };
 
-        graphApi.callMessengerProfileAPI(profilePayload);
+        facebookAPI.callMessengerProfileAPI(profilePayload);
     },
 
     getGetStarted() {
@@ -102,22 +102,22 @@ export default {
 
     setGetStarted() {
         let getStartedPayload = this.getGetStarted();
-        graphApi.callMessengerProfileAPI(getStartedPayload);
+        facebookAPI.callMessengerProfileAPI(getStartedPayload);
     },
 
     setGreeting() {
         let greetingPayload = this.getGreeting();
-        graphApi.callMessengerProfileAPI(greetingPayload);
+        facebookAPI.callMessengerProfileAPI(greetingPayload);
     },
 
     setPersistentMenu() {
         let menuPayload = this.getPersistentMenu();
-        graphApi.callMessengerProfileAPI(menuPayload);
+        facebookAPI.callMessengerProfileAPI(menuPayload);
     },
 
     setWhitelistedDomains() {
         let domainPayload = this.getWhitelistedDomains();
-        graphApi.callMessengerProfileAPI(domainPayload);
+        facebookAPI.callMessengerProfileAPI(domainPayload);
     }
 
 };

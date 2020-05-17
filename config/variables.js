@@ -5,17 +5,19 @@ require('dotenv').config();
 const ENV_VARS = [
     'PORT',
     'APP_URL',
+    'APP_EMAIL',
     'SITE_URL',
     'NAME_COMPANY',
-    'PAGE_ID',
-    'APP_ID',
-    'PAGE_ACCESS_TOKEN',
-    'VERIFY_TOKEN',
+    'FB_PAGE_ID',
+    'FB_APP_ID',
+    'FB_PAGE_ACCESS_TOKEN',
+    'FB_VERIFY_TOKEN',
+    'FB_PAGE_INBOX_ID',
     'GOOGLE_CLIENT_EMAIL',
     'GOOGLE_PROJECT_ID',
     'GOOGLE_LANGUAGE_CODE',
     'GOOGLE_PRIVATE_KEY',
-    'CALENDAR_ID'
+    'GOOGLE_CALENDAR_ID'
 ];
 
 export default {
@@ -25,21 +27,23 @@ export default {
     PORT: process.env.PORT || 3000,
 
     APP_URL: process.env.APP_URL,
+    APP_EMAIL: process.env.APP_EMAIL,
     SITE_URL: process.env.SITE_URL,
     NAME_COMPANY: process.env.NAME_COMPANY,
 
-    PAGE_ID: process.env.PAGE_ID,
-    APP_ID: process.env.APP_ID,
-    APP_SECRET: process.env.APP_SECRET,
-    PAGE_ACCESS_TOKEN: process.env.PAGE_ACCESS_TOKEN,
-    VERIFY_TOKEN: process.env.VERIFY_TOKEN,
+    FB_PAGE_ID: process.env.FB_PAGE_ID,
+    FB_APP_ID: process.env.FB_APP_ID,
+    FB_APP_SECRET: process.env.FB_APP_SECRET,
+    FB_PAGE_ACCESS_TOKEN: process.env.FB_PAGE_ACCESS_TOKEN,
+    FB_VERIFY_TOKEN: process.env.FB_VERIFY_TOKEN,
+    FB_PAGE_INBOX_ID: process.env.FB_PAGE_INBOX_ID,
 
     GOOGLE_CLIENT_EMAIL: process.env.GOOGLE_CLIENT_EMAIL,
     GOOGLE_PROJECT_ID: process.env.GOOGLE_PROJECT_ID,
     GOOGLE_LANGUAGE_CODE: process.env.GOOGLE_LANGUAGE_CODE,
     GOOGLE_PRIVATE_KEY: process.env.GOOGLE_PRIVATE_KEY,
     
-    CALENDAR_ID: process.env.CALENDAR_ID,
+    GOOGLE_CALENDAR_ID: process.env.GOOGLE_CALENDAR_ID,
     
 
     get mPlatfom() {

@@ -1,8 +1,11 @@
+import moment from 'moment';
 import { struct } from 'pb-util';
 import send from './send';
-import utils from './utils';
-import graphApi from './graph-api';
+import utils from '../utils';
 import mysql from '../config/mysql';
+import dialogflowAPI from '../services/dialogflow';
+import facebookAPI from '../services/facebook';
+import calendarAPI from '../services/calendar';
 
 /**
  * Process message type card
@@ -126,7 +129,7 @@ const handleMsgObj = {
             message: payload.facebook,
             verifyPerson
         };
-        graphApi.sendCall(messageData);
+        facebookAPI.sendCall(messageData);
     }
 };
 
@@ -148,7 +151,7 @@ const handleQuickReply = (senderID, quickReply, messageId) => {
         quickReplyPayload
     );
 
-    send.sendToDialogFlow(senderID, quickReplyPayload);
+    dialogflowAPI.sendTextToDialogFlow(senderID, quickReplyPayload);
 };
 
 /**
@@ -210,57 +213,235 @@ const handleDialogFlowResponse = (sender, response) => {
  * @param {*} parameters
  */
 const handleDFAObj = {
-    'input.welcome': async (sender, messages) => {
-        // const user = utils.usersMap.get(sender);
+    'input.welcome': async (sender, messages, contexts, parameters) => {
+        const user = utils.usersMap.get(sender);
+        const userDB = await mysql.execQuery(`SELECT * FROM leads WHERE senderID= '${sender}'`).catch(err => {
+            console.log('❌ ERRO: ', err);
+        });
 
-        send.sendTypingOn(sender);
-        // send.sendTextMessage(sender, `Olá ${user.first_name}!`);
-        setTimeout(function() {
-            handleMessages(messages, sender);
-        }, 1000);
+        const welcome = () => {
+            return new Promise(function(resolve) {
+                send.sendTypingOn(sender);
+                setTimeout(function() {
+                    resolve(send.sendTextMessage(sender, `Oi ${user.first_name}! 👋`));
+                }, 1000);
+            });
+        };
+        const about = () => {
+            return new Promise(function(resolve) {
+                send.sendTypingOn(sender);
+                setTimeout(function() {
+                    resolve(send.sendTextMessage(sender, 'Sou a Lary, a atendente virtual 🤖 da Clínica Dentalk!'));
+                }, 1000);
+            });
+        };
+        const copy = () => {
+            return new Promise(function(resolve) {
+                send.sendTypingOn(sender);
+                setTimeout(function() {
+                    resolve(send.sendTextMessage(sender, 'Aqui acreditamos que sorrisos renovados transformam vidas!'));
+                }, 1000);
+            });
+        };
+        const getPhone = () => {
+            return new Promise(function(resolve) {
+                send.sendTypingOn(sender);
+                setTimeout(function() {
+                    let replies = [
+                        {
+                            'content_type': 'user_phone_number',
+                            'title': 'user_phone_number',
+                            'payload': 'user_phone_number'
+                        }
+                    ];
+                    const text = 'Me confirme seu número de telefone:';
+                    resolve(send.sendQuickReply(sender, text, replies));
+                }, 1000);
+            });
+        };
+        const getEmail = () => {
+            return new Promise(function(resolve) {
+                send.sendTypingOn(sender);
+                setTimeout(function() {
+                    let replies = [
+                        {
+                            'content_type': 'user_email',
+                            'title': 'user_email',
+                            'payload': 'user_email'
+                        }
+                    ];
+                    const text = 'Ok! Antes de começarmos me confirme também seu e-mail:';
+                    resolve(send.sendQuickReply(sender, text, replies));
+                }, 1000);
+            });
+        };
+        const onboarding = (first) => {
+            return new Promise(function(resolve) {
+                send.sendTypingOn(sender);
+                setTimeout(function() {
+                    let replies = [
+                        {
+                            'content_type': 'text',
+                            'title': 'Agendar avaliação',
+                            'payload': 'Quero agendar uma avaliação'
+                        },
+                        {
+                            'content_type': 'text',
+                            'title': 'Verificar avaliação',
+                            'payload': 'Quero verificar minha avaliação'
+                        },
+                        {
+                            'content_type': 'text',
+                            'title': 'Conheça a clínica',
+                            'payload': 'Quero conhecer clínica'
+                        },
+                        {
+                            'content_type': 'text',
+                            'title': 'Nossos tratamentos',
+                            'payload': 'Quero conhecer os tratamentos'
+                        }
+                    ];
+                    if(first) {
+                        const text = 'Vamos começar o seu atendimento, selecione um dos botões abaixo. 👇';
+                        resolve(send.sendQuickReply(sender, text, replies));
+                    } else {
+                        const text = 'Que bom te ver por aqui novamente. No que posso te ajudar hoje?';
+                        resolve(send.sendQuickReply(sender, text, replies));
+                    }
+                }, 1000);
+            });
+        };
+
+        const phoneDB = userDB[0].phone;
+        const emailDB = userDB[0].phone;
+
+        if (phoneDB !== null && emailDB !== null) {
+
+            welcome().then(() => {
+                return setTimeout(function() {
+                    send.sendTypingOn(sender);
+                    onboarding();
+                }, 1000);
+            });
+
+        } else {
+
+            const [phone, email] = [parameters.fields.phone.stringValue, parameters.fields.email.stringValue];
+            let missingSlots = [];
+            if (!phone) { missingSlots.push('telefone'); }
+            if (!email) { missingSlots.push('e-mail'); }
+
+            if (missingSlots.length === 1){
+                if (!phone && email) {
+                    return getPhone();
+                } else if (!email && phone) {
+                    return getEmail();
+                }
+            } 
+            else if (missingSlots.length === 2){
+                welcome().then(() => {
+                    return about();
+                }).then(() => {
+                    return copy();
+                }).then(() => {
+                    return getPhone();
+                });
+            } else {
+                if (phone && email) {
+                    mysql.execQuery(`UPDATE leads SET phone = '${phone}' WHERE senderID = '${sender}'`)
+                        .catch(err => {
+                            console.log('❌ ERRO: ', err);
+                        });
+                    mysql.execQuery(`UPDATE leads SET email = '${email}' WHERE senderID = '${sender}'`)
+                        .catch(err => {
+                            console.log('❌ ERRO: ', err);
+                        });
+                }
+                return setTimeout(function() {
+                    send.sendTypingOn(sender);
+                    onboarding(true);
+                }, 1000);
+            }
+        }
+    
     },
-    'input.phone': (sender, messages, contexts, parameters) => {
-        send.sendTypingOn(sender);
-        const phone = parameters.fields.phone.stringValue;
+    'input.schedule': async (sender, messages, contexts, parameters) => {
+        const userDB = await mysql.execQuery(`SELECT * FROM leads WHERE senderID= '${sender}'`).catch(err => {
+            console.log('❌ ERRO: ', err);
+        });
+        const [phone, email] = [userDB[0].phone, userDB[0].email];
 
-        mysql.execQuery(`UPDATE leads SET phone = '${phone}' WHERE senderID = '${sender}'`)
-            .catch(err => {
+        let missingSlots = [];
+        if (!phone) { missingSlots.push('telefone'); }
+        if (!email) { missingSlots.push('e-mail'); }
+
+        if (missingSlots.length === 1){
+            send.sendTextMessage(sender, `Não encontrei seu ${missingSlots[0]}, me envie por favor para concluirmos.`);
+        } 
+        else if (missingSlots.length === 2){
+            send.sendTextMessage(sender, `Ok, preciso de duas coisas para continuar, seu ${missingSlots[0]} e ${missingSlots[1]}.`);
+        } else {
+            handleMessages(messages, sender);
+            send.sendTypingOn(sender);
+            const userDB = await mysql.execQuery(`SELECT * FROM leads WHERE senderID= '${sender}'`).catch(err => {
                 console.log('❌ ERRO: ', err);
             });
-        setTimeout(function() {
-            handleMessages(messages, sender);
-        }, 1000);
+            if (parameters.fields.date.stringValue && parameters.fields.time.stringValue) {
+                const date = parameters.fields.date.stringValue;
+                const time = parameters.fields.time.stringValue;
+                const dateTimeStart = new Date(Date.parse(date.split('T')[0] + 'T' + time.split('T')[1].split('-')[0] + '-03:00'));
+                const dateTimeEnd = new Date(new Date(dateTimeStart).setHours(dateTimeStart.getHours() + 1));
+                const appointmentTimeString = moment(dateTimeStart).locale('pt-br').format('LLLL');
+        
+                calendarAPI.createCalendarEvent(dateTimeStart, dateTimeEnd, userDB).then(() => {
+                    send.sendTypingOn(sender);
+                    setTimeout(function() {
+                        const text = `Tudo certo ${userDB[0].first_name}! Seu agendamento foi efetivado com sucesso. 😍 \nTe aguardamos aqui dia 🗓 ${appointmentTimeString}.`;
+                        send.sendTextMessage(sender, text);
+                    }, 1000);
+                    setTimeout(function() {
+                        let buttons = [
+                            {
+                                type:'web_url',
+                                url:'http://bit.ly/humbertoconsilio',
+                                title:'Chamar no WhatsApp'
+                            },
+                            {
+                                type:'phone_number',
+                                title:'Ligar agora',
+                                payload:'+5562983465454',
+                            },
+                            {
+                                type:'postback',
+                                title:'Falar com humano',
+                                payload:'Falar com humano'
+                            }
+                        ];
+        
+                        send.sendButtonMessage(sender, 'Caso tenha ficado alguma dúvida, fique à vontade de conversar com a gente!', buttons);
+                    }, 4000);
+                }).catch(() => {
+                    const text = `Opps o horário ${appointmentTimeString}, não está disponível. Vamos tentar outro?`;
+                    send.sendTextMessage(sender, text);
+                }); 
+            }
+        }
     },
-    'input.email': (sender, messages, contexts, parameters) => {
+    'talk.human': (sender) => {
         send.sendTypingOn(sender);
-        const email = parameters.fields.email.stringValue;
-
-        mysql.execQuery(`UPDATE leads SET email = '${email}' WHERE senderID = '${sender}'`)
-            .catch(err => {
-                console.log('❌ ERRO: ', err);
-            });
-
-        setTimeout(function() {
-            handleMessages(messages, sender);
-        }, 1000);
-    },
-    'input.schedule': (sender, messages) => {
-        send.sendTypingOn(sender);
-        setTimeout(function() {
-            handleMessages(messages, sender);
-        }, 1000);
+        facebookAPI.sendPassThread(sender);
     },
     'input.unknown': (sender, messages) => {
         send.sendTypingOn(sender);
         handleMessages(messages, sender);
         setTimeout(function() {
             let text = 'Opps, talvez eu não tenha aprendido o suficiente 😔. \n\n' +
-                    'Podemos tentar de novo, ou se preferir falar com um dos nossos humandos disponíveis 💜.';
+                    'Podemos tentar de novo, ou se preferir falar com um dos nossos humanos disponíveis 💜.';
             let replies = [
                 {
                     'content_type': 'text',
                     'title': 'Falar com humano',
-                    'payload': 'LIVE_AGENT'
+                    'payload': 'Falar com humano'
                 }
             ];
             send.sendQuickReply(sender, text, replies);
@@ -311,7 +492,7 @@ const receivedMessage = event => {
 
     var isEcho = message.is_echo;
     var messageId = message.mid;
-    var appId = message.app_id;
+    var appId = message.FB_APP_ID;
     var metadata = message.metadata;
 
     // You may get a text or attachment but not both
@@ -328,7 +509,7 @@ const receivedMessage = event => {
     }
 
     if (messageText) {
-        send.sendToDialogFlow(senderID, messageText);
+        dialogflowAPI.sendTextToDialogFlow(senderID, messageText);
     } else if (messageAttachments) {
         handleMessageAttachments(messageAttachments, senderID);
     }
@@ -341,7 +522,8 @@ const receivedMessage = event => {
 
 const receivedPbObj = {
     'get_started': (senderID, payload) => {
-        send.sendToDialogFlow(senderID, payload);
+        utils.setSessionandUser(senderID);
+        dialogflowAPI.sendTextToDialogFlow(senderID, payload);
     },
     'view_site': (senderID, payload) => {
         send.sendTextMessage(senderID, payload);

@@ -1,6 +1,6 @@
 'use strict';
 const uuid = require('uuid');
-import graphAPI from './graph-api';
+import facebookAPI from '../services/facebook';
 
 /**
  * Define is undefined
@@ -42,7 +42,7 @@ const setSessionandUser = senderID => {
         }
         if (!usersMap.has(senderID)) {
             try {
-                graphAPI.addUser(function(user) {
+                facebookAPI.addUser(function(user) {
                     resolve(usersMap.set(senderID, user));
                 }, senderID);
             } catch (err) {
