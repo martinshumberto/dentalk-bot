@@ -31,6 +31,10 @@ app.get('/leads', async (req, res) =>{
     const leads = await mysql.execQuery('SELECT * FROM leads');
     res.status(200).send(leads);
 });
+app.get('/events', async (req, res) =>{
+    const events = await mysql.execQuery('SELECT * FROM calendar_events');
+    res.status(200).send(events);
+});
 
 /*
  ** Middleware configuration

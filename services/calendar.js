@@ -10,7 +10,6 @@ const serviceAccountAuth = new google.auth.JWT({
 });
 
 const calendar = google.calendar('v3');
-const timeZoneOffset = '-03:00';
 
 const createCalendarEvent = (dateTimeStart, dateTimeEnd, userDB) => {
     return new Promise((resolve, reject) => {
@@ -26,14 +25,10 @@ const createCalendarEvent = (dateTimeStart, dateTimeEnd, userDB) => {
                 calendar.events.insert({ auth: serviceAccountAuth,
                     calendarId: config.GOOGLE_CALENDAR_ID,
                     resource: {
-                        summary: `${userDB[0].first_name}`,
+                        summary: `Consulta de ${userDB[0].first_name}`,
                         description: `Nome do paciente: ${userDB[0].first_name} ${userDB[0].last_name} \nTelefone: ${userDB[0].phone} \nE-mail: ${userDB[0].email} \n\nAgendamento realizado em: Facebook - ${moment().format('DD/MM/YYYY HH:mm')}`,
                         start: {dateTime: dateTimeStart},
-                        end: {dateTime: dateTimeEnd},
-                        attendees: [
-                            {email: config.APP_EMAIL},
-                            {email: userDB[0].email},
-                        ],
+                        end: {dateTime: dateTimeEnd}
                     }
                 }, (err, event) => {
                     err ? reject(err) : resolve(event);
@@ -43,15 +38,34 @@ const createCalendarEvent = (dateTimeStart, dateTimeEnd, userDB) => {
         });
     });
 };
-const currentlyOpen = () => {
-    let date = new Date();
-    date.setHours(date.getHours() + parseInt(timeZoneOffset.split(':')[0]));
-    date.setMinutes(date.getMinutes() + parseInt(timeZoneOffset.split(':')[0][0] + timeZoneOffset.split(':')[1]));
 
-    return date.getDay() >= 1 &&
-        date.getDay() <= 5 &&
-        date.getHours() >= 8 &&
-        date.getHours() <= 18;
+const updateCalendarEvent = (dateTimeStart, dateTimeEnd, eventID) => {
+    return new Promise((resolve, reject) => {
+
+        calendar.events.get({ 
+            auth: serviceAccountAuth,
+            calendarId: config.GOOGLE_CALENDAR_ID,
+            eventId: eventID
+        }, (err, calendarResponse) => {              
+            if (err || calendarResponse.data.length > 0) {
+                reject(err || new Error('O horário solicitado entra em conflito com outro compromisso.'));
+            } else {
+                const resource = {
+                    start: {dateTime: dateTimeStart.toISOString()},
+                    end: {dateTime: dateTimeEnd.toISOString()},
+                };
+                calendar.events.patch({
+                    auth: serviceAccountAuth,
+                    calendarId: config.GOOGLE_CALENDAR_ID,
+                    eventId: eventID,
+                    resource: resource
+                }, (err, event) => {
+                    err ? reject(err) : resolve(event);
+                });
+            }
+        });
+    });
 };
 
-export default { createCalendarEvent, currentlyOpen };
+
+export default { createCalendarEvent, updateCalendarEvent };

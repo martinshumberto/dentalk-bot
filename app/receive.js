@@ -1,3 +1,4 @@
+'use strict';
 import moment from 'moment';
 import { struct } from 'pb-util';
 import send from './send';
@@ -129,7 +130,7 @@ const handleMsgObj = {
             message: payload.facebook,
             verifyPerson
         };
-        facebookAPI.sendCall(messageData);
+        facebookAPI.sendCall(messageData, 0);
     }
 };
 
@@ -176,7 +177,7 @@ const handleDialogFlowResponse = (sender, response) => {
     let contexts = response.outputContexts;
     let parameters = response.parameters;
 
-    var delay = 4000;
+    var delay = 1000;
 
     if (utils.isDefined(action)) {
         send.sendTypingOn(sender);
@@ -383,9 +384,6 @@ const handleDFAObj = {
         } else {
             handleMessages(messages, sender);
             send.sendTypingOn(sender);
-            const userDB = await mysql.execQuery(`SELECT * FROM leads WHERE senderID= '${sender}'`).catch(err => {
-                console.log('❌ ERRO: ', err);
-            });
             if (parameters.fields.date.stringValue && parameters.fields.time.stringValue) {
                 const date = parameters.fields.date.stringValue;
                 const time = parameters.fields.time.stringValue;
@@ -393,10 +391,29 @@ const handleDFAObj = {
                 const dateTimeEnd = new Date(new Date(dateTimeStart).setHours(dateTimeStart.getHours() + 1));
                 const appointmentTimeString = moment(dateTimeStart).locale('pt-br').format('LLLL');
         
-                calendarAPI.createCalendarEvent(dateTimeStart, dateTimeEnd, userDB).then(() => {
+                calendarAPI.createCalendarEvent(dateTimeStart, dateTimeEnd, userDB).then((res) => {
+
+                    const event = res.data;
+
+                    var query = event.htmlLink.slice(1);
+                    var partes = query.split('&');
+                    let eventID = {};
+                    partes.forEach(function (parte) {
+                        var chaveValor = parte.split('=');
+                        var valor = chaveValor[1];
+                        eventID = valor;
+                    });
+
+                    const buf = Buffer.from(eventID, 'base64').toString('ascii');
+                    eventID = buf.split(' ');
+                    
+                    mysql.execQuery(`INSERT INTO calendar_events (eventID, senderID, status, link, summary, description, start, end) VALUES ('${eventID[0]}', '${sender}', '${event.status}', '${event.htmlLink}', '${event.summary}', '${event.description}', '${moment(event.start.dateTime).format('YYYY-MM-DD HH:mm:ss')}', '${moment(event.end.dateTime).format('YYYY-MM-DD HH:mm:ss')}')`).catch(err => {
+                        console.log('❌ ERRO: ', err);
+                    });
+                    
                     send.sendTypingOn(sender);
                     setTimeout(function() {
-                        const text = `Tudo certo ${userDB[0].first_name}! Seu agendamento foi efetivado com sucesso. 😍 \nTe aguardamos aqui dia 🗓 ${appointmentTimeString}.`;
+                        const text = `Tudo certo ${userDB[0].first_name}! Seu agendamento foi efetivado com sucesso. 😍 \nTe aguardamos aqui 📆 ${appointmentTimeString}.`;
                         send.sendTextMessage(sender, text);
                     }, 1000);
                     setTimeout(function() {
@@ -420,11 +437,96 @@ const handleDFAObj = {
         
                         send.sendButtonMessage(sender, 'Caso tenha ficado alguma dúvida, fique à vontade de conversar com a gente!', buttons);
                     }, 4000);
-                }).catch(() => {
+                }).catch((erro) => {
+                    console.log('ERRO', erro);
                     const text = `Opps o horário ${appointmentTimeString}, não está disponível. Vamos tentar outro?`;
                     send.sendTextMessage(sender, text);
                 }); 
             }
+        }
+    },
+    'input.schedule.update': async (sender) => {
+        send.sendTypingOn(sender);
+        const event = await mysql.execQuery(`SELECT * FROM calendar_events WHERE senderID='${sender}' LIMIT 1`).catch(err => {
+            console.log('❌ ERRO: ', err);
+        });
+
+        const text = `Opa, encontrei um agendamento para 📆 ${moment(event[0].start).locale('pt-br').format('LLLL')}.`;
+        send.sendTextMessage(sender, text);
+
+        setTimeout(function() {
+            let text = 'Gostaria de reagendar?';
+            let replies = [
+                {
+                    'content_type': 'text',
+                    'title': 'Sim',
+                    'payload': 'Sim'
+                },
+                {
+                    'content_type': 'text',
+                    'title': 'Não',
+                    'payload': 'Não'
+                }
+            ];
+            send.sendQuickReply(sender, text, replies);
+        }, 1000);
+
+    },
+    'input.schedule.update-yes': async (sender, messages, contexts, parameters) => {
+        const userDB = await mysql.execQuery(`SELECT * FROM leads WHERE senderID= '${sender}'`).catch(err => {
+            console.log('❌ ERRO: ', err);
+        });
+        const event = await mysql.execQuery(`SELECT * FROM calendar_events WHERE senderID='${sender}' LIMIT 1`).catch(err => {
+            console.log('❌ ERRO: ', err);
+        });
+        
+        send.sendTypingOn(sender);
+        handleMessages(messages, sender);
+        if (parameters.fields.date.stringValue && parameters.fields.time.stringValue) {
+            const date = parameters.fields.date.stringValue;
+            const time = parameters.fields.time.stringValue;
+            const dateTimeStart = new Date(Date.parse(date.split('T')[0] + 'T' + time.split('T')[1].split('-')[0] + '-03:00'));
+            const dateTimeEnd = new Date(new Date(dateTimeStart).setHours(dateTimeStart.getHours() + 1));
+            const appointmentTimeString = moment(dateTimeStart).locale('pt-br').format('LLLL');
+        
+            calendarAPI.updateCalendarEvent(dateTimeStart, dateTimeEnd, event[0].eventID).then((res) => {
+
+                const event = res.data;
+                mysql.execQuery(`UPDATE calendar_events SET start = '${moment(event.start.dateTime).format('YYYY-MM-DD HH:mm:ss')}', end = '${moment(event.end.dateTime).format('YYYY-MM-DD HH:mm:ss')}' WHERE senderID='${sender}'`).catch(err => {
+                    console.log('❌ ERRO: ', err);
+                });
+
+                setTimeout(function() {
+                    const text = `${userDB[0].first_name}, reagendei aqui! ✌ \nTe aguardamos aqui 📆 ${appointmentTimeString}.`;
+                    send.sendTextMessage(sender, text);
+                }, 1000);
+                setTimeout(function() {
+                    let buttons = [
+                        {
+                            type:'web_url',
+                            url:'http://bit.ly/humbertoconsilio',
+                            title:'Chamar no WhatsApp'
+                        },
+                        {
+                            type:'phone_number',
+                            title:'Ligar agora',
+                            payload:'+5562983465454',
+                        },
+                        {
+                            type:'postback',
+                            title:'Falar com humano',
+                            payload:'Falar com humano'
+                        }
+                    ];
+    
+                    send.sendButtonMessage(sender, 'Caso tenha ficado alguma dúvida, fique à vontade de conversar com a gente!', buttons);
+                }, 4000);
+               
+            }).catch((erro) => {
+                console.log('ERRO', erro);
+                const text = `Opps o horário ${appointmentTimeString}, não está disponível. Vamos tentar outro?`;
+                send.sendTextMessage(sender, text);
+            }); 
         }
     },
     'talk.human': (sender) => {

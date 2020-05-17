@@ -8,7 +8,7 @@ import utils from '../utils';
  * Send call to Facebook Graph API
  * @param {*} callback
  */
-const sendCall = async callback => {
+const sendCall = async (callback, i) => {
     request(
         {
             uri: `${config.mPlatfom}/me/messages`,
@@ -25,6 +25,8 @@ const sendCall = async callback => {
 
                 utils.setSessionandUser(recipientId);
 
+                if(i < callback.length) sendCall(callback, i+1 );
+                
                 if (messageId) {
                     console.log(
                         '⚡️ [BOT CONSILIO] Successfully sent message with id %s to recipient %s',

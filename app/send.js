@@ -15,7 +15,7 @@ const sendTypingOn = recipientId => {
         sender_action: 'typing_on'
     };
 
-    facebookAPI.sendCall(messageData);
+    facebookAPI.sendCall(messageData, 0);
 };
 
 /**
@@ -30,7 +30,7 @@ const sendTypingOff = recipientId => {
         sender_action: 'typing_off'
     };
 
-    facebookAPI.sendCall(messageData);
+    facebookAPI.sendCall(messageData, 0);
 };
 
 /**
@@ -47,7 +47,7 @@ const sendTextMessage = (recipientId, text) => {
             text: text
         }
     };
-    facebookAPI.sendCall(messageData);
+    facebookAPI.sendCall(messageData, 0);
 };
 
 /**
@@ -66,7 +66,7 @@ const sendTextWithPersona = (recipientId, text, persona_id) => {
             persona_id: persona_id
         }
     };
-    facebookAPI.sendCall(messageData);
+    facebookAPI.sendCall(messageData, 0);
 };
 
 /*
@@ -88,7 +88,7 @@ const sendGifMessage = (recipientId, GifName) => {
         }
     };
 
-    facebookAPI.sendCall(messageData);
+    facebookAPI.sendCall(messageData, 0);
 };
 
 /**
@@ -108,7 +108,7 @@ const sendQuickReply = (recipientId, text, replies, metadata) => {
         }
     };
 
-    facebookAPI.sendCall(messageData);
+    facebookAPI.sendCall(messageData, 0);
 };
 
 /*
@@ -132,7 +132,7 @@ const sendButtonMessage = (recipientId, text, buttons) => {
         }
     };
 
-    facebookAPI.sendCall(messageData);
+    facebookAPI.sendCall(messageData, 0);
 };
 
 /**
@@ -155,7 +155,7 @@ const sendGenericMessage = (recipientId, elements) => {
             }
         }
     };
-    facebookAPI.sendCall(messageData);
+    facebookAPI.sendCall(messageData, 0);
 };
 
 export default {
