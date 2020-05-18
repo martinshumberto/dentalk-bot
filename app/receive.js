@@ -370,17 +370,37 @@ const handleDFAObj = {
         const userDB = await mysql.execQuery(`SELECT * FROM leads WHERE senderID= '${sender}'`).catch(err => {
             console.log('❌ ERRO: ', err);
         });
-        const [phone, email] = [userDB[0].phone, userDB[0].email];
+
+        send.sendTypingOn(sender);
+
+        const [date, time] = [parameters.fields.date.stringValue, parameters.fields.time.stringValue];
 
         let missingSlots = [];
-        if (!phone) { missingSlots.push('telefone'); }
-        if (!email) { missingSlots.push('e-mail'); }
+        if (!date) { missingSlots.push('data'); }
+        if (!time) { missingSlots.push('horário'); }
 
         if (missingSlots.length === 1){
-            send.sendTextMessage(sender, `Não encontrei seu ${missingSlots[0]}, me envie por favor para concluirmos.`);
+            const dateTimeStart = new Date(Date.parse(date.split('T')[0] + 'T' + date.split('T')[1].split('-')[0] + '-03:00'));
+
+            calendarAPI.slotsFromEvents(dateTimeStart).then((resTime) => {
+                var replies = [];
+                resTime.forEach(function(time) {
+                    const hour = moment(time).format('HH:mm');
+                    console.log('TIME', hour);
+                    replies.push({
+                        'content_type': 'text',
+                        'title': hour,
+                        'payload': hour
+                    });
+                });
+                let text = 'Agora, selecione o melhor horário dentre os disponíveis para a sua avaliação:';
+                send.sendQuickReply(sender, text, replies);
+            });
+
         } 
         else if (missingSlots.length === 2){
-            send.sendTextMessage(sender, `Ok, preciso de duas coisas para continuar, seu ${missingSlots[0]} e ${missingSlots[1]}.`);
+            send.sendTypingOn(sender);
+            send.sendTextMessage(sender, 'Que dia fica bom para você fazer sua avaliação?');
         } else {
             handleMessages(messages, sender);
             send.sendTypingOn(sender);
@@ -390,30 +410,19 @@ const handleDFAObj = {
                 const dateTimeStart = new Date(Date.parse(date.split('T')[0] + 'T' + time.split('T')[1].split('-')[0] + '-03:00'));
                 const dateTimeEnd = new Date(new Date(dateTimeStart).setHours(dateTimeStart.getHours() + 1));
                 const appointmentTimeString = moment(dateTimeStart).locale('pt-br').format('LLLL');
-        
-                calendarAPI.createCalendarEvent(dateTimeStart, dateTimeEnd, userDB).then((res) => {
+             
+                calendarAPI.createCalendarEvent(dateTimeStart, dateTimeEnd, userDB).then(async (res) => {
 
                     const event = res.data;
+                    const eventID = await utils.getEventID(event);
 
-                    var query = event.htmlLink.slice(1);
-                    var partes = query.split('&');
-                    let eventID = {};
-                    partes.forEach(function (parte) {
-                        var chaveValor = parte.split('=');
-                        var valor = chaveValor[1];
-                        eventID = valor;
-                    });
-
-                    const buf = Buffer.from(eventID, 'base64').toString('ascii');
-                    eventID = buf.split(' ');
-                    
-                    mysql.execQuery(`INSERT INTO calendar_events (eventID, senderID, status, link, summary, description, start, end) VALUES ('${eventID[0]}', '${sender}', '${event.status}', '${event.htmlLink}', '${event.summary}', '${event.description}', '${moment(event.start.dateTime).format('YYYY-MM-DD HH:mm:ss')}', '${moment(event.end.dateTime).format('YYYY-MM-DD HH:mm:ss')}')`).catch(err => {
+                    mysql.execQuery(`INSERT INTO calendar_events (eventID, senderID, status, link, summary, description, start, end) VALUES ('${eventID}', '${sender}', '${event.status}', '${event.htmlLink}', '${event.summary}', '${event.description}', '${moment(event.start.dateTime).format('YYYY-MM-DD HH:mm:ss')}', '${moment(event.end.dateTime).format('YYYY-MM-DD HH:mm:ss')}')`).catch(err => {
                         console.log('❌ ERRO: ', err);
                     });
                     
                     send.sendTypingOn(sender);
                     setTimeout(function() {
-                        const text = `Tudo certo ${userDB[0].first_name}! Seu agendamento foi efetivado com sucesso. 😍 \nTe aguardamos aqui 📆 ${appointmentTimeString}.`;
+                        const text = `Tudo certo ${userDB[0].first_name}! Agendei aqui para você. 📝 \nTe aguardamos aqui 📆 ${appointmentTimeString}.`;
                         send.sendTextMessage(sender, text);
                     }, 1000);
                     setTimeout(function() {

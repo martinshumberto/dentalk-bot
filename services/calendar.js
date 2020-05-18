@@ -67,5 +67,76 @@ const updateCalendarEvent = (dateTimeStart, dateTimeEnd, eventID) => {
     });
 };
 
+const currentlyOpen = () => {
+    let date = new Date();
+    date.setHours(date.getHours() + parseInt('-03:00'.split(':')[0]));
+    date.setMinutes(date.getMinutes() + parseInt('-03:00'.split(':')[0][0] + '-03:00'.split(':')[1]));
 
-export default { createCalendarEvent, updateCalendarEvent };
+    return date.getDay() >= 1 &&
+      date.getDay() <= 5 &&
+      date.getHours() >= 8 &&
+      date.getHours() <= 18;
+};
+
+const slotsFromEvents = (startTime) => {
+    return new Promise((resolve) => {
+        const startDate = new Date(startTime);
+        const endDate = new Date(startTime);
+        startDate.setHours('08', '00', '00', '00');
+        endDate.setHours('18', '00', '00', '00');
+
+        const check = {
+            auth: serviceAccountAuth,
+            resource: {
+                items: [{id: config.GOOGLE_CALENDAR_ID}],
+                timeMin: startDate.toISOString(),
+                timeMax: endDate.toISOString(),
+                timeZone: '-03:00'
+            }
+        };
+        calendar.freebusy.query(check).then((data) => {
+            resolve(receivedSlotsHours(startDate, endDate, data.data.calendars[`${config.GOOGLE_CALENDAR_ID}`].busy));
+        });
+    });
+};
+
+const receivedSlotsHours = (start, end, events) => {
+    return new Promise((resolve) => {
+        const start_org = start.toISOString();
+        const end_org = end.toISOString();
+        let freeSlots = [];
+        let start_time = moment(start_org).format();
+        let end_time = moment(end_org).format();
+        end_time = end_time.valueOf();
+        let appt_start_time = start_time;
+        appt_start_time = new Date(appt_start_time).getTime();
+        end_time = new Date(end_time).getTime();
+
+        while (appt_start_time < end_time) {
+            const appt_end_time = appt_start_time + 1799;
+    
+            let slot_available = true;
+            events.forEach((event) => {
+                const this_start = new Date(event['start']).getTime();
+                const this_end = new Date(event['end']).getTime();
+    
+                if ((appt_start_time >= this_start && appt_start_time < this_end) ||
+                (appt_end_time >= this_start && appt_end_time < this_end)) {
+                    slot_available = false;
+                    return false;
+                }
+            });
+    
+            if (slot_available) {
+                const date = new Date(parseInt(appt_start_time));
+                freeSlots.push(date);
+            }
+    
+            appt_start_time += (600 * 6000);
+        }
+        resolve(freeSlots);
+    });
+};
+
+
+export default { createCalendarEvent, updateCalendarEvent, currentlyOpen, slotsFromEvents };
