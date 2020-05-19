@@ -825,8 +825,46 @@ const handleDFAObj = {
                 send.sendQuickReply(sender, text, replies);
             }, 1000);
         }
-
-
+    },
+    'input.treatments': (sender) => {
+        send.sendTypingOn(sender);
+        setTimeout(function() {
+            const text = 'Entendi! Veja alguns tratamentos/procedimentos que realizamos aqui na clínica e saiba mais sobre cada um deles. É só escolher 😉';
+            send.sendTextMessage(sender, text);
+        }, 1000);
+        setTimeout(function() {
+            let elements = [
+                {
+                    title:'Invisalign',
+                    image_url:'https://afetoodontologia.com.br/wp-content/uploads/2019/10/shutterstock-1006765645.png',
+                    subtitle:'Alternativa para quem não quer usar os aparelhos tradicionais',
+                    default_action: {
+                        type: 'web_url',
+                        url: 'https://afetoodontologia.com.br/invisalign/',
+                    },
+                    buttons: [{
+                        type: 'postback',
+                        title: 'Agendar consulta',
+                        payload: 'Agendar consulta',
+                    }]      
+                },
+                {
+                    title:'Harmonização facial',
+                    image_url:'https://afetoodontologia.com.br/wp-content/uploads/2019/10/harmoniza%C3%A7%C3%A3o-site-768x536.png',
+                    subtitle:'Novo conceito da estética facial e rejunevescimento',
+                    default_action: {
+                        type: 'web_url',
+                        url: 'https://afetoodontologia.com.br/harmonizacao-facial/',
+                    },
+                    buttons: [{
+                        type: 'postback',
+                        title: 'Agendar consulta',
+                        payload: 'Agendar consulta',
+                    }]      
+                },
+            ];
+            send.sendGenericMessage(sender, elements);
+        }, 1000);
     },
     'talk.human': (sender) => {
         send.sendTypingOn(sender);
