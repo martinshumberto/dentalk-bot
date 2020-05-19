@@ -25,8 +25,8 @@ const createCalendarEvent = (dateTimeStart, dateTimeEnd, userDB) => {
                 calendar.events.insert({ auth: serviceAccountAuth,
                     calendarId: config.GOOGLE_CALENDAR_ID,
                     resource: {
-                        summary: `Consulta de ${userDB[0].first_name}`,
-                        description: `Nome do paciente: ${userDB[0].first_name} ${userDB[0].last_name} \nTelefone: ${userDB[0].phone} \nE-mail: ${userDB[0].email} \n\nAgendamento realizado em: Facebook - ${moment().format('DD/MM/YYYY HH:mm')}`,
+                        summary: `Consulta de ${userDB.first_name}`,
+                        description: `Nome do paciente: ${userDB.first_name} ${userDB.last_name} \nTelefone: ${userDB.phone} \nE-mail: ${userDB.email} \n\nAgendamento realizado em: Facebook - ${moment().format('DD/MM/YYYY HH:mm')}`,
                         start: {dateTime: dateTimeStart},
                         end: {dateTime: dateTimeEnd}
                     }

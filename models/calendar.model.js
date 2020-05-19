@@ -10,7 +10,7 @@ const getEvent = async (sender) => {
 }; 
 const cancelEvent = async (sender) => {
     return new Promise((resolve) => {
-        const query = mysql.execQuery(`SELECT * FROM calendar_events WHERE senderID='${sender}' ORDER BY id DESC LIMIT 1`).catch(err => {
+        const query = mysql.execQuery(`UPDATE calendar_events SET status = 'canceled' WHERE senderID='${sender}'`).catch(err => {
             console.log('❌ ERRO: ', err);
         });
         resolve(query);

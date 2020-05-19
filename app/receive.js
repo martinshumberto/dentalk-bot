@@ -555,11 +555,11 @@ const handleDFAObj = {
         
         if (event.length > 0 || event.status == 'confirmed') {
                      
-            const text = `Encontrei! Sou rápida, não é mesmo? 😏 \nExiste um agendamento para 📆 ${moment(event.start).locale('pt-br').format('LLLL')}. \n\nDeseja reagendar ou cancelar? 👇`;
+            const text = `Encontrei! Sou rápida, não é mesmo? 😏 \nExiste um agendamento para 📆 ${moment(event.start).locale('pt-br').format('LLLL')}.`;
             send.sendTextMessage(sender, text);
     
             setTimeout(function() {
-                let text = 'Gostaria de reagendar?';
+                let text = 'Deseja reagendar ou cancelar? 👇';
                 let replies = [
                     {
                         'content_type': 'text',
@@ -597,11 +597,11 @@ const handleDFAObj = {
 
         if (event.length > 0 || event.status == 'confirmed') {
             
-            const text = `Encontrei! Estava marcado dia 📆 ${moment(event.start).locale('pt-br').format('LLLL')}.`;
+            const text = `Ótimo! Estava marcado dia 📆 ${moment(event.start).locale('pt-br').format('LLLL')}.`;
             send.sendTextMessage(sender, text);
 
             setTimeout(function() {
-                let text = 'Gostaria de reagendar? 👇';
+                let text = 'Posso continuar o reagedamento? 👇';
                 let replies = [
                     {
                         'content_type': 'text',
@@ -744,8 +744,8 @@ const handleDFAObj = {
         send.sendTypingOn(sender);
         const userDB = await userModel.getUserDB(sender);
         const event = await calendarModel.getEvent(sender);
-
-        calendarAPI.deleteCalendarEvent(event.eventID).then(async () => {
+        console.log(event);
+        await calendarAPI.deleteCalendarEvent(event.eventID).then(async () => {
             send.sendTypingOn(sender);
             await calendarModel.cancelEvent(sender);
 
@@ -781,6 +781,52 @@ const handleDFAObj = {
             const text = 'Ops, não consegui acessar a agenda agora, tente novamente mais tarde. 😓 ';
             send.sendTextMessage(sender, text);
         }); 
+    },
+    'input.institutional': async (sender) => {
+        send.sendTypingOn(sender);
+        setTimeout(function() {
+            const text = 'Ficamos felizes de você querer nos conhecer melhor! 💗 \n\nVamos aqui conta um pouco sobre a nossa clínica. Nossa Clínica foi fundada nos mais sólidos princípios éticos e profissionais. Possuímos uma equipe de profissionais especializada e pronta para oferecer o que há de mais avançado em tratamentos odontológicos e estética facial.';
+            send.sendTextMessage(sender, text);
+        }, 1000);
+        
+        const event = await calendarModel.getEvent(sender);
+
+        if (event.length > 0 || event.status == 'confirmed') {
+            setTimeout(function() {
+                const text = 'É meio complicado demonstrarmos tudo o que somos capazes por aqui.\nMas, a sua consulta de avaliação já está chegando e logo você nos conhecerá melhor. 😍 \n\nCaso tenha ficado alguma dúvida, fique à vontade de conversar com a gente no WhatsApp!';
+                send.sendTextMessage(sender, text);
+            }, 1000);
+            setTimeout(function() {
+                let buttons = [
+                    {
+                        type:'web_url',
+                        url:'http://bit.ly/humbertoconsilio',
+                        title:'Chamar no WhatsApp'
+                    }
+                ];
+
+                send.sendButtonMessage(sender, 'Caso tenha ficado alguma dúvida, fique à vontade de conversar com a gente!', buttons);
+            }, 1000);
+        } else {
+            send.sendTypingOn(sender);
+            setTimeout(function() {
+                const text = 'É complicado demonstrarmos tudo o que somos capazes por aqui.';
+                send.sendTextMessage(sender, text);
+            }, 1000);
+            setTimeout(function() {
+                let text = 'Agende uma avaliação, será um prazer te receber 😍';
+                let replies = [
+                    {
+                        'content_type': 'text',
+                        'title': 'Agendar agora',
+                        'payload': 'Agendar agora'
+                    }
+                ];
+                send.sendQuickReply(sender, text, replies);
+            }, 1000);
+        }
+
+
     },
     'talk.human': (sender) => {
         send.sendTypingOn(sender);
