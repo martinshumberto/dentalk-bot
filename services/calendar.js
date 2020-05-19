@@ -78,6 +78,52 @@ const currentlyOpen = () => {
       date.getHours() <= 18;
 };
 
+const daysFromSlots = (startTime, endTime) => {
+    return new Promise((resolve) => {
+        const startDate = new Date(startTime);
+        const endDate = new Date(endTime);
+
+        startDate.setHours('0', '00', '00');
+        endDate.setHours('23', '59', '59');
+
+        const check = {
+            auth: serviceAccountAuth,
+            resource: {
+                items: [{id: config.GOOGLE_CALENDAR_ID}],
+                timeMin: startDate.toISOString(),
+                timeMax: endDate.toISOString(),
+                timeZone: '-03:00'
+            }
+        };
+        calendar.freebusy.query(check).then((data) => {
+            resolve(receivedSlotsDays(startDate, endDate, data.data.calendars[`${config.GOOGLE_CALENDAR_ID}`].busy));
+        });
+    });
+};
+
+const receivedSlotsDays = (start, end, events) => {
+    return new Promise((resolve) => {
+        const freeSlots = []; 
+        
+        events.forEach(function (event, index) {
+            if (index == 0 && start < event.start) {
+                freeSlots.push({startDate: start, endDate: event.start});
+            }
+            else if (index == 0) {
+                start = event.end;
+            }
+            else if (events[index - 1].end < event.start) {
+                freeSlots.push({startDate: events[index - 1].end, endDate: event.start});
+            }
+    
+            if (events.length == (index + 1) && event.end < start) {
+                freeSlots.push({startDate: event.end, endDate: start});
+            }
+        });
+        resolve(freeSlots);
+    });
+};
+
 const slotsFromEvents = (startTime) => {
     return new Promise((resolve) => {
         const startDate = new Date(startTime);
@@ -139,4 +185,4 @@ const receivedSlotsHours = (start, end, events) => {
 };
 
 
-export default { createCalendarEvent, updateCalendarEvent, currentlyOpen, slotsFromEvents };
+export default { createCalendarEvent, updateCalendarEvent, currentlyOpen, daysFromSlots, slotsFromEvents };

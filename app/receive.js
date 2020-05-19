@@ -293,6 +293,11 @@ const handleDFAObj = {
                         },
                         {
                             'content_type': 'text',
+                            'title': 'Cancelar avaliação',
+                            'payload': 'Quero cancelar minha avaliação'
+                        },
+                        {
+                            'content_type': 'text',
                             'title': 'Conheça a clínica',
                             'payload': 'Quero conhecer clínica'
                         },
@@ -370,88 +375,181 @@ const handleDFAObj = {
         const userDB = await mysql.execQuery(`SELECT * FROM leads WHERE senderID= '${sender}'`).catch(err => {
             console.log('❌ ERRO: ', err);
         });
+        const event = await mysql.execQuery(`SELECT * FROM calendar_events WHERE senderID='${sender}' LIMIT 1`).catch(err => {
+            console.log('❌ ERRO: ', err);
+        });
 
         send.sendTypingOn(sender);
 
-        const [date, time] = [parameters.fields.date.stringValue, parameters.fields.time.stringValue];
+        if (event == 0) {
+            const [date, time] = [parameters.fields.date.stringValue, parameters.fields.time.stringValue];
 
-        let missingSlots = [];
-        if (!date) { missingSlots.push('data'); }
-        if (!time) { missingSlots.push('horário'); }
+            let missingSlots = [];
+            if (!date) { missingSlots.push('data'); }
+            if (!time) { missingSlots.push('horário'); }
 
-        if (missingSlots.length === 1){
-            const dateTimeStart = new Date(Date.parse(date.split('T')[0] + 'T' + date.split('T')[1].split('-')[0] + '-03:00'));
+            if (missingSlots.length === 1){
+                const dateTimeStart = new Date(Date.parse(date.split('T')[0] + 'T' + date.split('T')[1].split('-')[0] + '-03:00'));
 
-            calendarAPI.slotsFromEvents(dateTimeStart).then((resTime) => {
-                var replies = [];
-                resTime.forEach(function(time) {
-                    const hour = moment(time).format('HH:mm');
-                    console.log('TIME', hour);
-                    replies.push({
-                        'content_type': 'text',
-                        'title': hour,
-                        'payload': hour
+                calendarAPI.slotsFromEvents(dateTimeStart).then((resTime) => {
+                    let replies = [];
+                    resTime.forEach(function(time) {
+                        const hour = moment(time).format('HH:mm');
+                        replies.push({
+                            'content_type': 'text',
+                            'title': hour,
+                            'payload': hour
+                        });
                     });
+                    let text = 'Agora, selecione o melhor horário dentre os disponíveis para a sua avaliação:';
+                    send.sendQuickReply(sender, text, replies);
                 });
-                let text = 'Agora, selecione o melhor horário dentre os disponíveis para a sua avaliação:';
-                send.sendQuickReply(sender, text, replies);
-            });
 
-        } 
-        else if (missingSlots.length === 2){
-            send.sendTypingOn(sender);
-            send.sendTextMessage(sender, 'Que dia fica bom para você fazer sua avaliação?');
-        } else {
-            handleMessages(messages, sender);
-            send.sendTypingOn(sender);
-            if (parameters.fields.date.stringValue && parameters.fields.time.stringValue) {
-                const date = parameters.fields.date.stringValue;
-                const time = parameters.fields.time.stringValue;
-                const dateTimeStart = new Date(Date.parse(date.split('T')[0] + 'T' + time.split('T')[1].split('-')[0] + '-03:00'));
-                const dateTimeEnd = new Date(new Date(dateTimeStart).setHours(dateTimeStart.getHours() + 1));
-                const appointmentTimeString = moment(dateTimeStart).locale('pt-br').format('LLLL');
-             
-                calendarAPI.createCalendarEvent(dateTimeStart, dateTimeEnd, userDB).then(async (res) => {
+            } 
+            else if (missingSlots.length === 2){
+                const today = moment().format();
+                const dateTimeStart = new Date(Date.parse(today.split('T')[0] + 'T' + today.split('T')[1].split('-')[0] + '-03:00'));
+                const dateTimeEnd = new Date(moment(dateTimeStart).add(7, 'days'));
 
-                    const event = res.data;
-                    const eventID = await utils.getEventID(event);
+                calendarAPI.daysFromSlots(dateTimeStart, dateTimeEnd).then((resTime) => {
+                    let days = [];
+                    let daysRefine = [];
+                    resTime.forEach(function(time) {
+                        moment.locale('pt-BR');
+                        const day = moment(time.startDate).format('DD');
+                        const month = moment(time.startDate).format('MM');
+                        const weekDay = moment(time.startDate).format('dddd');
 
-                    mysql.execQuery(`INSERT INTO calendar_events (eventID, senderID, status, link, summary, description, start, end) VALUES ('${eventID}', '${sender}', '${event.status}', '${event.htmlLink}', '${event.summary}', '${event.description}', '${moment(event.start.dateTime).format('YYYY-MM-DD HH:mm:ss')}', '${moment(event.end.dateTime).format('YYYY-MM-DD HH:mm:ss')}')`).catch(err => {
-                        console.log('❌ ERRO: ', err);
+                        days.push({
+                            day: day,
+                            month: month,
+                            weekDay: weekDay
+                        });
+                        daysRefine = days.filter(function (a) {
+                            return !this[JSON.stringify(a)] && (this[JSON.stringify(a)] = true);
+                        }, Object.create(null));
                     });
+                    let replies = [];
+                    daysRefine.forEach(function(day) {
+                        replies.push({
+                            'content_type': 'text',
+                            'title': `${day.weekDay.substring(0,3)} - ${day.day}/${day.month}`,
+                            'payload': `${day.weekDay.substring(0,3)} - ${day.day}/${day.month}`
+                        });
+                    });
+                    let text = 'Que dia fica bom para você fazer sua avaliação?';
+                    send.sendQuickReply(sender, text, replies);
+                });
+            } else {
+                handleMessages(messages, sender);
+                send.sendTypingOn(sender);
+                if (parameters.fields.date.stringValue && parameters.fields.time.stringValue) {
+                    const date = parameters.fields.date.stringValue;
+                    const time = parameters.fields.time.stringValue;
+                    const dateTimeStart = new Date(Date.parse(date.split('T')[0] + 'T' + time.split('T')[1].split('-')[0] + '-03:00'));
+                    const dateTimeEnd = new Date(new Date(dateTimeStart).setHours(dateTimeStart.getHours() + 1));
+                    const appointmentTimeString = moment(dateTimeStart).locale('pt-br').format('LLLL');
+             
+                    calendarAPI.createCalendarEvent(dateTimeStart, dateTimeEnd, userDB).then(async (res) => {
+
+                        const event = res.data;
+                        const eventID = await utils.getEventID(event);
+
+                        mysql.execQuery(`INSERT INTO calendar_events (eventID, senderID, status, link, summary, description, start, end) VALUES ('${eventID}', '${sender}', '${event.status}', '${event.htmlLink}', '${event.summary}', '${event.description}', '${moment(event.start.dateTime).format('YYYY-MM-DD HH:mm:ss')}', '${moment(event.end.dateTime).format('YYYY-MM-DD HH:mm:ss')}')`).catch(err => {
+                            console.log('❌ ERRO: ', err);
+                        });
                     
-                    send.sendTypingOn(sender);
-                    setTimeout(function() {
-                        const text = `Tudo certo ${userDB[0].first_name}! Agendei aqui para você. 📝 \nTe aguardamos aqui 📆 ${appointmentTimeString}.`;
-                        send.sendTextMessage(sender, text);
-                    }, 1000);
-                    setTimeout(function() {
-                        let buttons = [
-                            {
-                                type:'web_url',
-                                url:'http://bit.ly/humbertoconsilio',
-                                title:'Chamar no WhatsApp'
-                            },
-                            {
-                                type:'phone_number',
-                                title:'Ligar agora',
-                                payload:'+5562983465454',
-                            },
-                            {
-                                type:'postback',
-                                title:'Falar com humano',
-                                payload:'Falar com humano'
-                            }
-                        ];
+                        send.sendTypingOn(sender);
+                        setTimeout(function() {
+                            const text = `Tudo certo ${userDB[0].first_name}! Agendei aqui para você. 📝 \nTe aguardamos aqui 📆 ${appointmentTimeString}.`;
+                            send.sendTextMessage(sender, text);
+                        }, 1000);
+                        setTimeout(function() {
+                            let buttons = [
+                                {
+                                    type:'web_url',
+                                    url:'http://bit.ly/humbertoconsilio',
+                                    title:'Chamar no WhatsApp'
+                                },
+                                {
+                                    type:'phone_number',
+                                    title:'Ligar agora',
+                                    payload:'+5562983465454',
+                                },
+                                {
+                                    type:'postback',
+                                    title:'Falar com humano',
+                                    payload:'Falar com humano'
+                                }
+                            ];
         
-                        send.sendButtonMessage(sender, 'Caso tenha ficado alguma dúvida, fique à vontade de conversar com a gente!', buttons);
-                    }, 4000);
-                }).catch((erro) => {
-                    console.log('ERRO', erro);
-                    const text = `Opps o horário ${appointmentTimeString}, não está disponível. Vamos tentar outro?`;
-                    send.sendTextMessage(sender, text);
-                }); 
+                            send.sendButtonMessage(sender, 'Caso tenha ficado alguma dúvida, fique à vontade de conversar com a gente!', buttons);
+                        }, 4000);
+                    }).catch((erro) => {
+                        console.log('ERRO', erro);
+                        const text = `Opps o horário ${appointmentTimeString}, não está disponível. Vamos tentar outro?`;
+                        send.sendTextMessage(sender, text);
+                    }); 
+                }
             }
+        } else {
+            const text = `Você já tem uma avaliação marcada 📆 ${moment(event[0].start).locale('pt-br').format('LLLL')}.`;
+            send.sendTextMessage(sender, text);
+
+            setTimeout(function() {
+                let text = 'Deseja reagendar? 👇';
+                let replies = [
+                    {
+                        'content_type': 'text',
+                        'title': 'Reagendar agora',
+                        'payload': 'Reagendar agora'
+                    }
+                ];
+                send.sendQuickReply(sender, text, replies);
+            }, 1000);
+        }
+    },
+    'input.schedule.verify': async (sender) => {
+        send.sendTypingOn(sender);
+        const event = await mysql.execQuery(`SELECT * FROM calendar_events WHERE senderID='${sender}' LIMIT 1`).catch(err => {
+            console.log('❌ ERRO: ', err);
+        });
+        
+        if (event > 0) {
+            const text = `Encontrei! Sou rápida, não é mesmo? 😏 \n existe um agendamento para 📆 ${moment(event[0].start).locale('pt-br').format('LLLL')}. \n\nDeseja reagendar ou cancelar? 👇`;
+            send.sendTextMessage(sender, text);
+    
+            setTimeout(function() {
+                let text = 'Gostaria de reagendar?';
+                let replies = [
+                    {
+                        'content_type': 'text',
+                        'title': 'Reagendar agora',
+                        'payload': 'Reagendar agora'
+                    },
+                    {
+                        'content_type': 'text',
+                        'title': 'Cancelar agora',
+                        'payload': 'Cancelar agora'
+                    }
+                ];
+                send.sendQuickReply(sender, text, replies);
+            }, 1000);
+        } else {
+            const text = 'Infelizmente não encontrei o seu agendamento. 😰';
+            send.sendTextMessage(sender, text);
+
+            setTimeout(function() {
+                let text = 'Mas, calma. Você pode agendar a sua avaliação agora! 😄 \n\nSelecione para agendar. 👇';
+                let replies = [
+                    {
+                        'content_type': 'text',
+                        'title': 'Agendar agora',
+                        'payload': 'Agendar agora'
+                    }
+                ];
+                send.sendQuickReply(sender, text, replies);
+            }, 1000);
         }
     },
     'input.schedule.update': async (sender) => {
@@ -459,26 +557,42 @@ const handleDFAObj = {
         const event = await mysql.execQuery(`SELECT * FROM calendar_events WHERE senderID='${sender}' LIMIT 1`).catch(err => {
             console.log('❌ ERRO: ', err);
         });
+        if (event > 0) {
+            const text = `Encontrei! Estava marcado dia 📆 ${moment(event[0].start).locale('pt-br').format('LLLL')}.`;
+            send.sendTextMessage(sender, text);
 
-        const text = `Opa, encontrei um agendamento para 📆 ${moment(event[0].start).locale('pt-br').format('LLLL')}.`;
-        send.sendTextMessage(sender, text);
+            setTimeout(function() {
+                let text = 'Gostaria de reagendar? 👇';
+                let replies = [
+                    {
+                        'content_type': 'text',
+                        'title': 'Sim',
+                        'payload': 'Sim'
+                    },
+                    {
+                        'content_type': 'text',
+                        'title': 'Não',
+                        'payload': 'Não'
+                    }
+                ];
+                send.sendQuickReply(sender, text, replies);
+            }, 1000);
+        } else {
+            const text = 'Infelizmente não encontrei o seu agendamento. 😰';
+            send.sendTextMessage(sender, text);
 
-        setTimeout(function() {
-            let text = 'Gostaria de reagendar?';
-            let replies = [
-                {
-                    'content_type': 'text',
-                    'title': 'Sim',
-                    'payload': 'Sim'
-                },
-                {
-                    'content_type': 'text',
-                    'title': 'Não',
-                    'payload': 'Não'
-                }
-            ];
-            send.sendQuickReply(sender, text, replies);
-        }, 1000);
+            setTimeout(function() {
+                let text = 'Mas, calma. Você pode agendar a sua avaliação agora! 😄 \n\nSelecione para agendar. 👇';
+                let replies = [
+                    {
+                        'content_type': 'text',
+                        'title': 'Agendar agora',
+                        'payload': 'Agendar agora'
+                    }
+                ];
+                send.sendQuickReply(sender, text, replies);
+            }, 1000);
+        }
 
     },
     'input.schedule.update-yes': async (sender, messages, contexts, parameters) => {
@@ -546,8 +660,7 @@ const handleDFAObj = {
         send.sendTypingOn(sender);
         handleMessages(messages, sender);
         setTimeout(function() {
-            let text = 'Opps, talvez eu não tenha aprendido o suficiente 😔. \n\n' +
-                    'Podemos tentar de novo, ou se preferir falar com um dos nossos humanos disponíveis 💜.';
+            let text = 'Opps, talvez eu não tenha aprendido o suficiente. 😔 \n\nPodemos tentar de novo, ou se preferir falar com um dos nossos humanos disponíveis. 💜';
             let replies = [
                 {
                     'content_type': 'text',
