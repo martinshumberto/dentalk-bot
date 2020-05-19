@@ -19,11 +19,14 @@ function execQuery(sqlQry){
                 }
             }
             else {
-                resolve(JSON.parse(JSON.stringify(results)));
+                const response = results[0];
+                resolve(response);
             }
         });
     });
 }
+
+
 
 export default {
     execQuery

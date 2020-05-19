@@ -2,18 +2,18 @@
 import request from 'request';
 import config from '../config/variables';
 import mysql from '../config/mysql';
-import utils from './utils';
+import utils from '../utils';
 
 /**
  * Send call to Facebook Graph API
  * @param {*} callback
  */
-const sendCall = async callback => {
+const sendCall = async (callback, i) => {
     request(
         {
             uri: `${config.mPlatfom}/me/messages`,
             qs: {
-                access_token: config.PAGE_ACCESS_TOKEN
+                access_token: config.FB_PAGE_ACCESS_TOKEN
             },
             method: 'POST',
             json: callback
@@ -25,6 +25,8 @@ const sendCall = async callback => {
 
                 utils.setSessionandUser(recipientId);
 
+                if(i < callback.length) sendCall(callback, i+1 );
+                
                 if (messageId) {
                     console.log(
                         '⚡️ [BOT CONSILIO] Successfully sent message with id %s to recipient %s',
@@ -49,15 +51,41 @@ const sendCall = async callback => {
     );
 };
 
+const sendPassThread = (senderID) => {
+    request(
+        {
+            uri: 'https://graph.facebook.com/v2.6/me/pass_thread_control',
+            qs: { access_token: config.FB_PAGE_ACCESS_TOKEN },
+            method: 'POST',
+            json: {
+                recipient: {
+                    id: senderID
+                },
+                target_app_id: config.FB_PAGE_INBOX_ID
+            }
+        },
+        (error, _res, body) => {
+            if (!error) {
+                console.log(
+                    '⚡️ [BOT CONSILIO] send pass thrend request sent:',
+                    body
+                );
+            } else {
+                console.error('❌ [BOT CONSILIO] Unable to pass thread message:', error);
+            }
+        }
+    );
+};
+
 const callMessengerProfileAPI = requestBody => {
     console.log(
-        `⚡️ [BOT CONSILIO] Setting messenger profile for app ${config.APP_ID}`
+        `⚡️ [BOT CONSILIO] Setting messenger profile for app ${config.FB_APP_ID}`
     );
     request(
         {
             uri: `${config.mPlatfom}/me/messenger_profile`,
             qs: {
-                access_token: config.PAGE_ACCESS_TOKEN
+                access_token: config.FB_PAGE_ACCESS_TOKEN
             },
             method: 'POST',
             json: requestBody
@@ -102,7 +130,7 @@ const callUserProfileAPI = senderPsid => {
         request({
             uri: `${config.mPlatfom}/${senderPsid}`,
             qs: {
-                access_token: config.PAGE_ACCESS_TOKEN,
+                access_token: config.FB_PAGE_ACCESS_TOKEN,
                 fields: 'first_name, last_name, gender, locale, timezone'
             },
             method: 'GET'
@@ -131,13 +159,13 @@ const callUserProfileAPI = senderPsid => {
 };
 const callNLPConfigsAPI = () => {
     console.log(
-        `⚡️ [BOT CONSILIO] Enable Built-in NLP for Page ${config.PAGE_ID}`
+        `⚡️ [BOT CONSILIO] Enable Built-in NLP for Page ${config.FB_PAGE_ID}`
     );
     request(
         {
             uri: `${config.mPlatfom}/me/nlp_configs`,
             qs: {
-                access_token: config.PAGE_ACCESS_TOKEN,
+                access_token: config.FB_PAGE_ACCESS_TOKEN,
                 nlp_enabled: true
             },
             method: 'POST'
@@ -168,12 +196,12 @@ const callFBAEventsAPI = (senderPsid, eventName) => {
         advertiser_tracking_enabled: 1,
         application_tracking_enabled: 1,
         extinfo: JSON.stringify(['mb1']),
-        page_id: config.pageId,
+        FB_PAGE_ID: config.pageId,
         page_scoped_user_id: senderPsid
     };
     request(
         {
-            uri: `${config.mPlatfom}/${config.APP_ID}/activities`,
+            uri: `${config.mPlatfom}/${config.FB_APP_ID}/activities`,
             method: 'POST',
             form: requestBody
         },
@@ -190,7 +218,7 @@ const callFBAEventsAPI = (senderPsid, eventName) => {
 };
 const callSubscriptionsAPI = customFields => {
     console.log(
-        `⚡️ [BOT CONSILIO] Setting app ${config.APP_ID} callback url to ${config.webhookUrl}`
+        `⚡️ [BOT CONSILIO] Setting app ${config.FB_APP_ID} callback url to ${config.webhookUrl}`
     );
 
     let fields =
@@ -204,12 +232,12 @@ const callSubscriptionsAPI = customFields => {
 
     request(
         {
-            uri: `${config.mPlatfom}/${config.APP_ID}/subscriptions`,
+            uri: `${config.mPlatfom}/${config.FB_APP_ID}/subscriptions`,
             qs: {
-                access_token: config.APP_ID + '|' + config.APP_SECRET,
+                access_token: config.FB_APP_ID + '|' + config.FB_APP_SECRET,
                 object: 'page',
                 callback_url: config.APP_URL + '/webhook',
-                verify_token: config.VERIFY_TOKEN,
+                verify_token: config.FB_VERIFY_TOKEN,
                 fields: fields,
                 include_values: 'true'
             },
@@ -226,7 +254,7 @@ const callSubscriptionsAPI = customFields => {
 };
 const callSubscribedApps = customFields => {
     console.log(
-        `⚡️ [BOT CONSILIO] Subscribing app ${config.APP_ID} to page ${config.PAGE_ID}`
+        `⚡️ [BOT CONSILIO] Subscribing app ${config.FB_APP_ID} to page ${config.FB_PAGE_ID}`
     );
 
     let fields =
@@ -239,9 +267,9 @@ const callSubscribedApps = customFields => {
     //messaging_postbacksconsole.log(fields);
     request(
         {
-            uri: `${config.mPlatfom}/${config.PAGE_ID}/subscribed_apps`,
+            uri: `${config.mPlatfom}/${config.FB_PAGE_ID}/subscribed_apps`,
             qs: {
-                access_token: config.PAGE_ACCESS_TOKEN,
+                access_token: config.FB_PAGE_ACCESS_TOKEN,
                 subscribed_fields: fields
             },
             method: 'POST'
@@ -258,7 +286,7 @@ const addUser = (callback, userId) => {
         {
             uri: `${config.mPlatfom}/${userId}`,
             qs: {
-                access_token: config.PAGE_ACCESS_TOKEN
+                access_token: config.FB_PAGE_ACCESS_TOKEN
             }
         },
         async function(error, response, body) {
@@ -289,6 +317,7 @@ const addUser = (callback, userId) => {
 
 export default {
     sendCall,
+    sendPassThread,
     callMessengerProfileAPI,
     getUserProfile,
     callUserProfileAPI,

@@ -1,6 +1,6 @@
 'use strict';
 const uuid = require('uuid');
-import graphAPI from './graph-api';
+import facebookAPI from '../services/facebook.service';
 
 /**
  * Define is undefined
@@ -42,7 +42,7 @@ const setSessionandUser = senderID => {
         }
         if (!usersMap.has(senderID)) {
             try {
-                graphAPI.addUser(function(user) {
+                facebookAPI.addUser(function(user) {
                     resolve(usersMap.set(senderID, user));
                 }, senderID);
             } catch (err) {
@@ -52,10 +52,34 @@ const setSessionandUser = senderID => {
     });
 };
 
+/**
+ * Resolve after x time
+ * @param {*} x 
+ */
+const getEventID = async (event) => {
+    return new Promise(resolve => {
+        
+        var query = event.htmlLink.slice(1);
+        var partes = query.split('&');
+        let eventID = {};
+        partes.forEach(function (parte) {
+            var chaveValor = parte.split('=');
+            var valor = chaveValor[1];
+            eventID = valor;
+        });
+
+        const buf = Buffer.from(eventID, 'base64').toString('ascii');
+        eventID = buf.split(' ');
+
+        resolve(eventID[0]);
+    });
+};
+
 export default {
     isDefined,
     setSessionandUser,
     resolveAfterXSeconds,
+    getEventID,
     sessionIds,
     usersMap
 };

@@ -9,7 +9,8 @@ import bodyParser from 'body-parser';
 import cors from './config/cors';
 import config from './config/variables';
 import mysql from './config/mysql';
-import webhook from './app/webhook';
+import webhookRoute from './routes/webhook.route';
+import profileRoute from './routes/profile.route';
 
 const app = express()
     .use(bodyParser.json())
@@ -19,18 +20,20 @@ const app = express()
 
 config.checkEnv();
 
-
 /*
  ** Routes configuration
  */
 
-app.get('/profile', webhook.setProfile);
-app.get('/webhook', webhook.verifyWebhook);
-app.post('/webhook', webhook.messageHandler);
+webhookRoute(app);
+profileRoute(app);
 
 app.get('/leads', async (req, res) =>{
     const leads = await mysql.execQuery('SELECT * FROM leads');
     res.status(200).send(leads);
+});
+app.get('/events', async (req, res) =>{
+    const events = await mysql.execQuery('SELECT * FROM calendar_events');
+    res.status(200).send(events);
 });
 
 /*
@@ -48,12 +51,12 @@ app.listen(config.PORT, () => {
         'and webhook by visiting:\n⚡️ [BOT CONSILIO] ' +
         config.APP_URL +
         '/profile?mode=all&verify_token=' +
-        config.VERIFY_TOKEN
+        config.FB_VERIFY_TOKEN
         );
     }
-    if (config.PAGE_ID) {
+    if (config.FB_PAGE_ID) {
         console.log('⚡️ [BOT CONSILIO] Test app by messaging:');
-        console.log('⚡️ [BOT CONSILIO] https://m.me/' + config.PAGE_ID);
+        console.log('⚡️ [BOT CONSILIO] https://m.me/' + config.FB_PAGE_ID);
     }
 });
 
