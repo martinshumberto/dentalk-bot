@@ -9,8 +9,8 @@ import bodyParser from 'body-parser';
 import cors from './config/cors';
 import config from './config/variables';
 import mysql from './config/mysql';
-import webhookRoutes from './routes/webhook';
-import profileRoutes from './routes/profile';
+import webhookRoute from './routes/webhook.route';
+import profileRoute from './routes/profile.route';
 
 const app = express()
     .use(bodyParser.json())
@@ -24,8 +24,8 @@ config.checkEnv();
  ** Routes configuration
  */
 
-webhookRoutes(app);
-profileRoutes(app);
+webhookRoute(app);
+profileRoute(app);
 
 app.get('/leads', async (req, res) =>{
     const leads = await mysql.execQuery('SELECT * FROM leads');

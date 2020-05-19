@@ -1,5 +1,5 @@
 'use strict';
-import facebookAPI from '../services/facebook';
+import facebookAPI from '../services/facebook.service';
 import utils from '../utils';
 import config from '../config/variables';
 

@@ -1,5 +1,5 @@
 import config from '../config/variables';
-import facebookAPI from '../services/facebook';
+import facebookAPI from '../services/facebook.service';
 
 export default {
 

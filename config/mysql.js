@@ -19,7 +19,7 @@ function execQuery(sqlQry){
                 }
             }
             else {
-                resolve(JSON.parse(JSON.stringify(results)));
+                resolve(JSON.parse(JSON.stringify(results[0])));
             }
         });
     });

@@ -2,7 +2,7 @@ import config from '../config/variables';
 import utils from '../utils';
 import receive from './receive';
 import profile from './profile';
-import facebookAPI from '../services/facebook';
+import facebookAPI from '../services/facebook.service';
 
 process.env.DEBUG = 'dialogflow:debug'; // enables lib debugging statements
 

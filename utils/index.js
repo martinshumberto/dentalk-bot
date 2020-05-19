@@ -1,6 +1,6 @@
 'use strict';
 const uuid = require('uuid');
-import facebookAPI from '../services/facebook';
+import facebookAPI from '../services/facebook.service';
 
 /**
  * Define is undefined
