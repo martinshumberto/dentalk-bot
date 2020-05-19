@@ -284,27 +284,27 @@ const handleDFAObj = {
                         {
                             'content_type': 'text',
                             'title': 'Agendar avaliação',
-                            'payload': 'Quero agendar uma avaliação'
+                            'payload': 'Agendar avaliação'
                         },
                         {
                             'content_type': 'text',
                             'title': 'Verificar avaliação',
-                            'payload': 'Quero verificar minha avaliação'
+                            'payload': 'Verificar avaliação'
                         },
                         {
                             'content_type': 'text',
                             'title': 'Cancelar avaliação',
-                            'payload': 'Quero cancelar minha avaliação'
+                            'payload': 'Cancelar avaliação'
                         },
                         {
                             'content_type': 'text',
                             'title': 'Conheça a clínica',
-                            'payload': 'Quero conhecer clínica'
+                            'payload': 'Conheça a clínica'
                         },
                         {
                             'content_type': 'text',
-                            'title': 'Nossos tratamentos',
-                            'payload': 'Quero conhecer os tratamentos'
+                            'title': 'Tratamentos',
+                            'payload': 'Tratamentos'
                         }
                     ];
                     if(first) {
@@ -375,13 +375,12 @@ const handleDFAObj = {
         const userDB = await mysql.execQuery(`SELECT * FROM leads WHERE senderID= '${sender}'`).catch(err => {
             console.log('❌ ERRO: ', err);
         });
-        const event = await mysql.execQuery(`SELECT * FROM calendar_events WHERE senderID='${sender}' LIMIT 1`).catch(err => {
+        const event = await mysql.execQuery(`SELECT * FROM calendar_events WHERE senderID='${sender}' ORDER BY id DESC LIMIT 1`).catch(err => {
             console.log('❌ ERRO: ', err);
         });
 
         send.sendTypingOn(sender);
-
-        if (event == 0) {
+        if (event == 0 || event[0].status == 'canceled') {
             const [date, time] = [parameters.fields.date.stringValue, parameters.fields.time.stringValue];
 
             let missingSlots = [];
@@ -511,12 +510,29 @@ const handleDFAObj = {
     },
     'input.schedule.verify': async (sender) => {
         send.sendTypingOn(sender);
-        const event = await mysql.execQuery(`SELECT * FROM calendar_events WHERE senderID='${sender}' LIMIT 1`).catch(err => {
+        const event = await mysql.execQuery(`SELECT * FROM calendar_events WHERE senderID='${sender}' ORDER BY id DESC LIMIT 1`).catch(err => {
             console.log('❌ ERRO: ', err);
         });
+
+        console.log('EVENT STATUS: ', event[0].status);
         
-        if (event > 0) {
-            const text = `Encontrei! Sou rápida, não é mesmo? 😏 \n existe um agendamento para 📆 ${moment(event[0].start).locale('pt-br').format('LLLL')}. \n\nDeseja reagendar ou cancelar? 👇`;
+        if (event == 0 || event[0].status == 'canceled') {
+            const text = 'Infelizmente não encontrei o seu agendamento. 😰';
+            send.sendTextMessage(sender, text);
+
+            setTimeout(function() {
+                let text = 'Mas, calma. Você pode agendar a sua avaliação agora! 😄 \n\nSelecione para agendar. 👇';
+                let replies = [
+                    {
+                        'content_type': 'text',
+                        'title': 'Agendar agora',
+                        'payload': 'Agendar agora'
+                    }
+                ];
+                send.sendQuickReply(sender, text, replies);
+            }, 1000);            
+        } else {
+            const text = `Encontrei! Sou rápida, não é mesmo? 😏 \nExiste um agendamento para 📆 ${moment(event[0].start).locale('pt-br').format('LLLL')}. \n\nDeseja reagendar ou cancelar? 👇`;
             send.sendTextMessage(sender, text);
     
             setTimeout(function() {
@@ -535,7 +551,14 @@ const handleDFAObj = {
                 ];
                 send.sendQuickReply(sender, text, replies);
             }, 1000);
-        } else {
+        }
+    },
+    'input.schedule.update': async (sender) => {
+        send.sendTypingOn(sender);
+        const event = await mysql.execQuery(`SELECT * FROM calendar_events WHERE senderID='${sender}' ORDER BY id DESC LIMIT 1`).catch(err => {
+            console.log('❌ ERRO: ', err);
+        });
+        if (event == 0) {
             const text = 'Infelizmente não encontrei o seu agendamento. 😰';
             send.sendTextMessage(sender, text);
 
@@ -550,14 +573,7 @@ const handleDFAObj = {
                 ];
                 send.sendQuickReply(sender, text, replies);
             }, 1000);
-        }
-    },
-    'input.schedule.update': async (sender) => {
-        send.sendTypingOn(sender);
-        const event = await mysql.execQuery(`SELECT * FROM calendar_events WHERE senderID='${sender}' LIMIT 1`).catch(err => {
-            console.log('❌ ERRO: ', err);
-        });
-        if (event > 0) {
+        } else {
             const text = `Encontrei! Estava marcado dia 📆 ${moment(event[0].start).locale('pt-br').format('LLLL')}.`;
             send.sendTextMessage(sender, text);
 
@@ -577,21 +593,6 @@ const handleDFAObj = {
                 ];
                 send.sendQuickReply(sender, text, replies);
             }, 1000);
-        } else {
-            const text = 'Infelizmente não encontrei o seu agendamento. 😰';
-            send.sendTextMessage(sender, text);
-
-            setTimeout(function() {
-                let text = 'Mas, calma. Você pode agendar a sua avaliação agora! 😄 \n\nSelecione para agendar. 👇';
-                let replies = [
-                    {
-                        'content_type': 'text',
-                        'title': 'Agendar agora',
-                        'payload': 'Agendar agora'
-                    }
-                ];
-                send.sendQuickReply(sender, text, replies);
-            }, 1000);
         }
 
     },
@@ -599,7 +600,7 @@ const handleDFAObj = {
         const userDB = await mysql.execQuery(`SELECT * FROM leads WHERE senderID= '${sender}'`).catch(err => {
             console.log('❌ ERRO: ', err);
         });
-        const event = await mysql.execQuery(`SELECT * FROM calendar_events WHERE senderID='${sender}' LIMIT 1`).catch(err => {
+        const event = await mysql.execQuery(`SELECT * FROM calendar_events WHERE senderID='${sender}' ORDER BY id DESC LIMIT 1`).catch(err => {
             console.log('❌ ERRO: ', err);
         });
         
@@ -651,6 +652,104 @@ const handleDFAObj = {
                 send.sendTextMessage(sender, text);
             }); 
         }
+    },
+    'input.schedule.cancel': async (sender) => {
+        send.sendTypingOn(sender);
+        const event = await mysql.execQuery(`SELECT * FROM calendar_events WHERE senderID='${sender}' ORDER BY id DESC LIMIT 1`).catch(err => {
+            console.log('❌ ERRO: ', err);
+        });
+        if (event == 0 || event[0].status == 'canceled') {
+            const text = 'Não encontrei o seu agendamento 🤔';
+            send.sendTextMessage(sender, text);
+            
+            setTimeout(function() {
+                let text = 'Caso você queira ver sobre outro assunto. \n\nÉ só selecionar o botão 👇';
+                let replies = [
+                    {
+                        'content_type': 'text',
+                        'title': 'Agendar avaliação',
+                        'payload': 'Agendar avaliação'
+                    },
+                    {
+                        'content_type': 'text',
+                        'title': 'Tratamentos',
+                        'payload': 'Tratamentos'
+                    },
+                    {
+                        'content_type': 'text',
+                        'title': 'Horário de funcionamento',
+                        'payload': 'Horário de funcionamento'
+                    }
+                ];
+                send.sendQuickReply(sender, text, replies);
+            }, 1000);
+        } else {
+            const text = 'Que pena! 😢 \nA avaliação é o primeiro passo para a transformação do seu sorriso ou dar aquele up! na autoestima.';
+            send.sendTextMessage(sender, text);
+
+            setTimeout(function() {
+                let text = 'Deseja mesmo cancelar a sua avaliação? Lembre-se que você pode reagendar. 👇';
+                let replies = [
+                    {
+                        'content_type': 'text',
+                        'title': 'Sim',
+                        'payload': 'Sim'
+                    },
+                    {
+                        'content_type': 'text',
+                        'title': 'Não',
+                        'payload': 'Não'
+                    }
+                ];
+                send.sendQuickReply(sender, text, replies);
+            }, 1000);
+        }
+    },
+    'input.schedule.cancel-yes': async (sender) => {
+        send.sendTypingOn(sender);
+        const userDB = await mysql.execQuery(`SELECT * FROM leads WHERE senderID= '${sender}'`).catch(err => {
+            console.log('❌ ERRO: ', err);
+        });
+        const event = await mysql.execQuery(`SELECT * FROM calendar_events WHERE senderID='${sender}' ORDER BY id DESC LIMIT 1`).catch(err => {
+            console.log('❌ ERRO: ', err);
+        });
+        calendarAPI.deleteCalendarEvent(event[0].eventID).then(() => {
+            mysql.execQuery(`UPDATE calendar_events SET status = 'canceled' WHERE senderID='${sender}'`).catch(err => {
+                console.log('❌ ERRO: ', err);
+            });
+            send.sendTypingOn(sender);
+            setTimeout(function() {
+                const text = `${userDB[0].first_name}, tudo pronto! \nCancelei sua avaliação.`;
+                send.sendTextMessage(sender, text);
+            }, 1000);
+            
+            setTimeout(function() {
+                let text = 'Caso você queira ver sobre outro assunto. \n\nÉ só selecionar o botão 👇';
+                let replies = [
+                    {
+                        'content_type': 'text',
+                        'title': 'Agendar avaliação',
+                        'payload': 'Agendar avaliação'
+                    },
+                    {
+                        'content_type': 'text',
+                        'title': 'Tratamentos',
+                        'payload': 'Tratamentos'
+                    },
+                    {
+                        'content_type': 'text',
+                        'title': 'Horário de funcionamento',
+                        'payload': 'Horário de funcionamento'
+                    }
+                ];
+                send.sendQuickReply(sender, text, replies);
+            }, 1000);
+           
+        }).catch((erro) => {
+            console.log('ERRO', erro);
+            const text = 'Ops, não consegui acessar a agenda agora, tente novamente mais tarde. 😓 ';
+            send.sendTextMessage(sender, text);
+        }); 
     },
     'talk.human': (sender) => {
         send.sendTypingOn(sender);

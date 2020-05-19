@@ -67,6 +67,24 @@ const updateCalendarEvent = (dateTimeStart, dateTimeEnd, eventID) => {
     });
 };
 
+const deleteCalendarEvent = (eventID) => {
+    return new Promise((resolve, reject) => {
+
+        calendar.events.delete({
+            auth: serviceAccountAuth,
+            calendarId: config.GOOGLE_CALENDAR_ID,
+            eventId: eventID
+        }, function(err) {
+            if (err) {
+                console.log('The API returned an error: ' + err);
+                reject();
+            }
+            console.log('Event deleted.');
+            resolve();
+        });
+    });
+};
+
 const currentlyOpen = () => {
     let date = new Date();
     date.setHours(date.getHours() + parseInt('-03:00'.split(':')[0]));
@@ -185,4 +203,11 @@ const receivedSlotsHours = (start, end, events) => {
 };
 
 
-export default { createCalendarEvent, updateCalendarEvent, currentlyOpen, daysFromSlots, slotsFromEvents };
+export default { 
+    createCalendarEvent, 
+    updateCalendarEvent, 
+    deleteCalendarEvent, 
+    currentlyOpen, 
+    daysFromSlots, 
+    slotsFromEvents 
+};
