@@ -774,7 +774,7 @@ const handleDFAObj = {
                     }
                 ];
                 send.sendQuickReply(sender, text, replies);
-            }, 1000);
+            }, 2000);
            
         }).catch((erro) => {
             console.log('ERRO', erro);
@@ -795,7 +795,7 @@ const handleDFAObj = {
             setTimeout(function() {
                 const text = 'É meio complicado demonstrarmos tudo o que somos capazes por aqui.\nMas, a sua consulta de avaliação já está chegando e logo você nos conhecerá melhor. 😍 \n\nCaso tenha ficado alguma dúvida, fique à vontade de conversar com a gente no WhatsApp!';
                 send.sendTextMessage(sender, text);
-            }, 1000);
+            }, 2000);
             setTimeout(function() {
                 let buttons = [
                     {
@@ -806,13 +806,13 @@ const handleDFAObj = {
                 ];
 
                 send.sendButtonMessage(sender, 'Caso tenha ficado alguma dúvida, fique à vontade de conversar com a gente!', buttons);
-            }, 1000);
+            }, 2000);
         } else {
             send.sendTypingOn(sender);
             setTimeout(function() {
                 const text = 'É complicado demonstrarmos tudo o que somos capazes por aqui.';
                 send.sendTextMessage(sender, text);
-            }, 1000);
+            }, 2000);
             setTimeout(function() {
                 let text = 'Agende uma avaliação, será um prazer te receber 😍';
                 let replies = [
@@ -823,7 +823,7 @@ const handleDFAObj = {
                     }
                 ];
                 send.sendQuickReply(sender, text, replies);
-            }, 1000);
+            }, 2000);
         }
     },
     'input.treatments': (sender) => {
@@ -906,7 +906,25 @@ const handleDFAObj = {
                 }
             ];
             send.sendGenericMessage(sender, elements);
+        }, 2000);
+    },
+    'input.values': (sender) => {
+        send.sendTypingOn(sender);
+        setTimeout(function() {
+            const text = 'Para te passarmos um valor, precisamos primeiramente fazer uma avaliação sem compromisso. O valor costuma ser diferente de paciente para paciente.';
+            send.sendTextMessage(sender, text);
         }, 1000);
+        setTimeout(function() {
+            let text = 'Mas, fique tranquilo! Você pode agendar a sua avaliação agora. Clique abaixo. 😬';
+            let replies = [
+                {
+                    'content_type': 'text',
+                    'title': 'Agendar agora',
+                    'payload': 'Agendar agora'
+                }
+            ];
+            send.sendQuickReply(sender, text, replies);
+        }, 2000);
     },
     'talk.human': (sender) => {
         send.sendTypingOn(sender);
@@ -1001,8 +1019,8 @@ const receivedMessage = event => {
  */
 
 const receivedPbObj = {
-    'GET_STARTED': (senderID, payload) => {
-        utils.setSessionandUser(senderID);
+    'get_started': async (senderID, payload) => {
+        await utils.setSessionandUser(senderID);
         dialogflowAPI.sendTextToDialogFlow(senderID, payload);
     },
     'VIEW_SITE': (senderID, payload) => {

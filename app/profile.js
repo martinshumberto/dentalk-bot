@@ -26,7 +26,7 @@ export default {
     getGetStarted() {
         return {
             get_started: {
-                payload: 'GET_STARTED'
+                payload: 'get_started'
             }
         };
     },
