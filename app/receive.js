@@ -418,7 +418,7 @@ const handleDFAObj = {
 
         send.sendTypingOn(sender);
 
-        if (event.length > 0 || event.status == 'confirmed') {
+        if (event && event.status == 'confirmed') {
 
             const text = `Você já tem uma avaliação marcada 📆 ${moment(event.start).locale('pt-br').format('LLLL')}.`;
             send.sendTextMessage(sender, text);
@@ -553,7 +553,7 @@ const handleDFAObj = {
         send.sendTypingOn(sender);
         const event = await calendarModel.getEvent(sender);
         
-        if (event.length > 0 || event.status == 'confirmed') {
+        if (event && event.status == 'confirmed') {
                      
             const text = `Encontrei! Sou rápida, não é mesmo? 😏 \nExiste um agendamento para 📆 ${moment(event.start).locale('pt-br').format('LLLL')}.`;
             send.sendTextMessage(sender, text);
@@ -595,7 +595,7 @@ const handleDFAObj = {
         send.sendTypingOn(sender);
         const event = await calendarModel.getEvent(sender);
 
-        if (event.length > 0 || event.status == 'confirmed') {
+        if (event && event.status == 'confirmed') {
             
             const text = `Ótimo! Estava marcado dia 📆 ${moment(event.start).locale('pt-br').format('LLLL')}.`;
             send.sendTextMessage(sender, text);
@@ -692,7 +692,7 @@ const handleDFAObj = {
 
         const event = await calendarModel.getEvent(sender);
 
-        if (event.length > 0 || event.status == 'confirmed') {
+        if (event && event.status == 'confirmed') {
             
             const text = 'Que pena! 😢 \nA avaliação é o primeiro passo para a transformação do seu sorriso ou dar aquele up! na autoestima.';
             send.sendTextMessage(sender, text);
@@ -783,18 +783,15 @@ const handleDFAObj = {
         }); 
     },
     'input.institutional': async (sender) => {
-        // send.sendTypingOn(sender);
-        // send.sendImageMessage(sender, '/clinic.jpg');
-
         send.sendTypingOn(sender);
+        const event = await calendarModel.getEvent(sender);
+
         setTimeout(function() {
             const text = 'Ficamos felizes de você querer nos conhecer melhor! 💗 \n\nVamos aqui conta um pouco sobre a nossa clínica. Nossa Clínica foi fundada nos mais sólidos princípios éticos e profissionais. Possuímos uma equipe de profissionais especializada e pronta para oferecer o que há de mais avançado em tratamentos odontológicos e estética facial.';
             send.sendTextMessage(sender, text);
         }, 1000);
-        
-        const event = await calendarModel.getEvent(sender);
 
-        if (event.length > 0 || event.status == 'confirmed') {
+        if (event && event.status == 'confirmed') {
             setTimeout(function() {
                 const text = 'É meio complicado demonstrarmos tudo o que somos capazes por aqui.\nMas, a sua consulta de avaliação já está chegando e logo você nos conhecerá melhor. 😍 \n\nCaso tenha ficado alguma dúvida, fique à vontade de conversar com a gente no WhatsApp!';
                 send.sendTextMessage(sender, text);
