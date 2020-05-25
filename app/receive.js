@@ -359,10 +359,7 @@ const handleDFAObj = {
             });
         };
 
-        const phoneDB = userDB.phone;
-        const emailDB = userDB.phone;
-
-        if (phoneDB !== null && emailDB !== null) {
+        if (userDB && userDB.phone && userDB.email) {
 
             welcome().then(() => {
                 return setTimeout(function() {

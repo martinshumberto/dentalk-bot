@@ -1,12 +1,18 @@
 import mysql from 'mysql';
 
-const connection = mysql.createConnection({
-    host     : '198.58.109.236',
-    port     : 3306,
-    user     : 'dentalk',
-    password : '!CCOKRQ1Ca1x',
-    database : 'dentalk'
-});
+var connection;
+
+function connectDb() {
+    connection = mysql.createConnection({
+        host     : '198.58.109.236',
+        port     : 3306,
+        user     : 'dentalk',
+        password : '!CCOKRQ1Ca1x',
+        database : 'dentalk'
+    });
+    connection.on('error', connectDb());
+}
+
 
 function execQuery(sqlQry){
     return new Promise((resolve, reject) => {
@@ -29,5 +35,6 @@ function execQuery(sqlQry){
 
 
 export default {
-    execQuery
+    execQuery,
+    connectDb
 };
