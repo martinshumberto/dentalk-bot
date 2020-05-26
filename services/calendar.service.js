@@ -79,7 +79,6 @@ const deleteCalendarEvent = (eventID) => {
                 console.log('The API returned an error: ' + err);
                 reject();
             }
-            console.log('Event deleted.');
             resolve();
         });
     });

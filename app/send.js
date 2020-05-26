@@ -91,6 +91,28 @@ const sendGifMessage = (recipientId, GifName) => {
     facebookAPI.sendCall(messageData, 0);
 };
 
+/*
+     * Send a image using the Send API.
+     *
+     */
+const sendImageMessage = (recipientId, imageName) => {
+    var messageData = {
+        recipient: {
+            id: recipientId
+        },
+        message: {
+            attachment: {
+                type: 'image',
+                payload: {
+                    url: config.APP_URL + imageName
+                }
+            }
+        }
+    };
+
+    facebookAPI.sendCall(messageData, 0);
+};
+
 /**
  * Send type quick reply message using the Service API.
  * @param {Number} recipientId
@@ -166,5 +188,6 @@ export default {
     sendQuickReply,
     sendButtonMessage,
     sendGifMessage,
+    sendImageMessage,
     sendGenericMessage
 };

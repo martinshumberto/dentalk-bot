@@ -67,7 +67,7 @@ const sendPassThread = (senderID) => {
         (error, _res, body) => {
             if (!error) {
                 console.log(
-                    '⚡️ [BOT CONSILIO] send pass thrend request sent:',
+                    '⚡️ [BOT CONSILIO] Send pass thrend request sent:',
                     body
                 );
             } else {
@@ -296,7 +296,8 @@ const addUser = (callback, userId) => {
                     const consulta = await mysql.execQuery(`SELECT * FROM leads WHERE senderID= '${userId}'`).catch(err => {
                         console.log('❌ ERRO: ', err);
                     });
-                    if (consulta.length == 0) {
+                    console.log('CONSULTA: ', consulta);
+                    if (!consulta) {
                         await mysql.execQuery(`INSERT INTO leads (senderID, first_name, last_name, profile_pic) VALUES ('${userId}', '${user.first_name}','${user.last_name}', '${user.profile_pic}')`).catch(err => {
                             console.log('❌ ERRO: ', err);
                         });

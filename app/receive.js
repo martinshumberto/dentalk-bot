@@ -359,10 +359,7 @@ const handleDFAObj = {
             });
         };
 
-        const phoneDB = userDB.phone;
-        const emailDB = userDB.phone;
-
-        if (phoneDB !== null && emailDB !== null) {
+        if (userDB && userDB.phone && userDB.email) {
 
             welcome().then(() => {
                 return setTimeout(function() {
@@ -418,7 +415,7 @@ const handleDFAObj = {
 
         send.sendTypingOn(sender);
 
-        if (event.length > 0 || event.status == 'confirmed') {
+        if (event && event.status == 'confirmed') {
 
             const text = `Você já tem uma avaliação marcada 📆 ${moment(event.start).locale('pt-br').format('LLLL')}.`;
             send.sendTextMessage(sender, text);
@@ -553,7 +550,7 @@ const handleDFAObj = {
         send.sendTypingOn(sender);
         const event = await calendarModel.getEvent(sender);
         
-        if (event.length > 0 || event.status == 'confirmed') {
+        if (event && event.status == 'confirmed') {
                      
             const text = `Encontrei! Sou rápida, não é mesmo? 😏 \nExiste um agendamento para 📆 ${moment(event.start).locale('pt-br').format('LLLL')}.`;
             send.sendTextMessage(sender, text);
@@ -595,7 +592,7 @@ const handleDFAObj = {
         send.sendTypingOn(sender);
         const event = await calendarModel.getEvent(sender);
 
-        if (event.length > 0 || event.status == 'confirmed') {
+        if (event && event.status == 'confirmed') {
             
             const text = `Ótimo! Estava marcado dia 📆 ${moment(event.start).locale('pt-br').format('LLLL')}.`;
             send.sendTextMessage(sender, text);
@@ -692,7 +689,7 @@ const handleDFAObj = {
 
         const event = await calendarModel.getEvent(sender);
 
-        if (event.length > 0 || event.status == 'confirmed') {
+        if (event && event.status == 'confirmed') {
             
             const text = 'Que pena! 😢 \nA avaliação é o primeiro passo para a transformação do seu sorriso ou dar aquele up! na autoestima.';
             send.sendTextMessage(sender, text);
@@ -737,7 +734,7 @@ const handleDFAObj = {
                     }
                 ];
                 send.sendQuickReply(sender, text, replies);
-            }, 1000);
+            }, 2000);
         }
     },
     'input.schedule.cancel-yes': async (sender) => {
@@ -774,7 +771,7 @@ const handleDFAObj = {
                     }
                 ];
                 send.sendQuickReply(sender, text, replies);
-            }, 1000);
+            }, 2000);
            
         }).catch((erro) => {
             console.log('ERRO', erro);
@@ -784,18 +781,18 @@ const handleDFAObj = {
     },
     'input.institutional': async (sender) => {
         send.sendTypingOn(sender);
+        const event = await calendarModel.getEvent(sender);
+
         setTimeout(function() {
             const text = 'Ficamos felizes de você querer nos conhecer melhor! 💗 \n\nVamos aqui conta um pouco sobre a nossa clínica. Nossa Clínica foi fundada nos mais sólidos princípios éticos e profissionais. Possuímos uma equipe de profissionais especializada e pronta para oferecer o que há de mais avançado em tratamentos odontológicos e estética facial.';
             send.sendTextMessage(sender, text);
         }, 1000);
-        
-        const event = await calendarModel.getEvent(sender);
 
-        if (event.length > 0 || event.status == 'confirmed') {
+        if (event && event.status == 'confirmed') {
             setTimeout(function() {
                 const text = 'É meio complicado demonstrarmos tudo o que somos capazes por aqui.\nMas, a sua consulta de avaliação já está chegando e logo você nos conhecerá melhor. 😍 \n\nCaso tenha ficado alguma dúvida, fique à vontade de conversar com a gente no WhatsApp!';
                 send.sendTextMessage(sender, text);
-            }, 1000);
+            }, 2000);
             setTimeout(function() {
                 let buttons = [
                     {
@@ -806,13 +803,13 @@ const handleDFAObj = {
                 ];
 
                 send.sendButtonMessage(sender, 'Caso tenha ficado alguma dúvida, fique à vontade de conversar com a gente!', buttons);
-            }, 1000);
+            }, 2000);
         } else {
             send.sendTypingOn(sender);
             setTimeout(function() {
                 const text = 'É complicado demonstrarmos tudo o que somos capazes por aqui.';
                 send.sendTextMessage(sender, text);
-            }, 1000);
+            }, 2000);
             setTimeout(function() {
                 let text = 'Agende uma avaliação, será um prazer te receber 😍';
                 let replies = [
@@ -823,7 +820,7 @@ const handleDFAObj = {
                     }
                 ];
                 send.sendQuickReply(sender, text, replies);
-            }, 1000);
+            }, 2000);
         }
     },
     'input.treatments': (sender) => {
@@ -837,34 +834,94 @@ const handleDFAObj = {
                 {
                     title:'Invisalign',
                     image_url:'https://afetoodontologia.com.br/wp-content/uploads/2019/10/shutterstock-1006765645.png',
-                    subtitle:'Alternativa para quem não quer usar os aparelhos tradicionais',
+                    subtitle:'O Invisalign são “alinhadores invisíveis”. Alternativa para quem não quer usar os aparelhos tradicionais',
                     default_action: {
                         type: 'web_url',
-                        url: 'https://afetoodontologia.com.br/invisalign/',
+                        url: 'https://consilio.com.br/',
                     },
                     buttons: [{
                         type: 'postback',
                         title: 'Agendar consulta',
-                        payload: 'Agendar consulta',
+                        payload: 'SCHEDULE_APPOINTMENT',
                     }]      
                 },
                 {
                     title:'Harmonização facial',
                     image_url:'https://afetoodontologia.com.br/wp-content/uploads/2019/10/harmoniza%C3%A7%C3%A3o-site-768x536.png',
-                    subtitle:'Novo conceito da estética facial e rejunevescimento',
+                    subtitle:'Novo conceito da estética facial e rejunevescimento que integra a naturalidade à beleza da face',
                     default_action: {
                         type: 'web_url',
-                        url: 'https://afetoodontologia.com.br/harmonizacao-facial/',
+                        url: 'https://consilio.com.br/',
                     },
                     buttons: [{
                         type: 'postback',
                         title: 'Agendar consulta',
-                        payload: 'Agendar consulta',
+                        payload: 'SCHEDULE_APPOINTMENT',
                     }]      
                 },
+                {
+                    title:'Ortodontia',
+                    image_url:'https://afetoodontologia.com.br/wp-content/uploads/2019/09/ortodontia.jpg',
+                    subtitle:'Dentes alinhados não ajudam apenas o seu sorriso, mas também a saúde do seu organismo',
+                    default_action: {
+                        type: 'web_url',
+                        url: 'https://consilio.com.br/',
+                    },
+                    buttons: [{
+                        type: 'postback',
+                        title: 'Agendar consulta',
+                        payload: 'SCHEDULE_APPOINTMENT',
+                    }]      
+                },
+                {
+                    title:'Implantes Dentários',
+                    image_url:'https://afetoodontologia.com.br/wp-content/uploads/2020/04/implantes-dentarios-afeto.jpg',
+                    subtitle:'O tratamento por meio do Implante trata-se de um pino inserido no maxilar ou mandíbula através de uma cirurgia. ',
+                    default_action: {
+                        type: 'web_url',
+                        url: 'https://consilio.com.br/',
+                    },
+                    buttons: [{
+                        type: 'postback',
+                        title: 'Agendar consulta',
+                        payload: 'SCHEDULE_APPOINTMENT',
+                    }]      
+                },
+                {
+                    title:'Lentes de Contato',
+                    image_url:'https://afetoodontologia.com.br/wp-content/uploads/2020/03/image.png',
+                    subtitle:'As Lentes de Contato Dentais são trabalhos estéticos que encobrem a frente do dente.',
+                    default_action: {
+                        type: 'web_url',
+                        url: 'https://consilio.com.br/',
+                    },
+                    buttons: [{
+                        type: 'postback',
+                        title: 'Agendar consulta',
+                        payload: 'SCHEDULE_APPOINTMENT',
+                    }]      
+                }
             ];
             send.sendGenericMessage(sender, elements);
+        }, 2000);
+    },
+    'input.values': (sender) => {
+        send.sendTypingOn(sender);
+        setTimeout(function() {
+            const text = 'Para te passarmos um valor, precisamos primeiramente fazer uma avaliação sem compromisso. O valor costuma ser diferente de paciente para paciente.';
+            send.sendTextMessage(sender, text);
         }, 1000);
+        setTimeout(function() {
+            let text = 'Mas, fique tranquilo! Você pode agendar a sua avaliação agora. Clique abaixo. 😬';
+            let replies = [
+                {
+                    'content_type': 'text',
+                    'title': 'Agendar agora',
+                    'payload': 'Agendar agora'
+                }
+            ];
+            send.sendQuickReply(sender, text, replies);
+        }, 2000);
     },
     'talk.human': (sender) => {
         send.sendTypingOn(sender);
@@ -959,14 +1016,17 @@ const receivedMessage = event => {
  */
 
 const receivedPbObj = {
-    'get_started': (senderID, payload) => {
-        utils.setSessionandUser(senderID);
+    'get_started': async (senderID, payload) => {
+        await utils.setSessionandUser(senderID);
         dialogflowAPI.sendTextToDialogFlow(senderID, payload);
     },
-    'view_site': (senderID, payload) => {
+    'VIEW_SITE': (senderID, payload) => {
         send.sendTextMessage(senderID, payload);
     },
-    'default': (senderID, payload) => {
+    'SCHEDULE_APPOINTMENT': (senderID) => {
+        dialogflowAPI.sendEventToDialogFlow(senderID, 'schedule');
+    },
+    'DEFAULT': (senderID, payload) => {
         send.sendTextMessage(senderID, payload);
     }
 };
@@ -986,7 +1046,7 @@ const receivedPostback = event => {
         timeOfPostback
     );
 
-    return (receivedPbObj[payload] || receivedPbObj['default'])(senderID, payload);
+    return (receivedPbObj[payload] || receivedPbObj['DEFAULT'])(senderID, payload);
 };
 
 /**
