@@ -3,20 +3,23 @@
 /*
  ** Import packages
  */
-require('dotenv').config();
+
+import dotenv from 'dotenv';
 import express from 'express';
 import bodyParser from 'body-parser';
-import cors from './config/cors';
+import cors from 'cors';
 import config from './config/variables';
 import mysql from './config/mysql';
-import webhookRoute from './routes/webhook.route';
 import profileRoute from './routes/profile.route';
+import webhookRoute from './routes/webhook.route';
 
-const app = express()
-    .use(bodyParser.json())
-    .use(bodyParser.urlencoded({ extended: true }))
-    .use(cors)
-    .use(express.static(__dirname + '/static'));
+dotenv.config();
+
+const app = express();
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(cors());
+app.use(express.static(__dirname + '/static'));
 
 config.checkEnv();
 
@@ -39,6 +42,31 @@ app.get('/events', async (req, res) =>{
 /*
  ** Middleware configuration
  */
+
+// error handlers
+
+// development error handler
+// will print stacktrace
+if (app.get('env') === 'development') {
+    app.use(function(err, req, res) {
+        res.status(err.status || 500);
+        res.render('error', {
+            message: err.message,
+            error: err
+        });
+    });
+}
+
+// production error handler
+// no stacktraces leaked to user
+app.use(function(err, req, res) {
+    res.status(err.status || 500);
+    res.render('error', {
+        message: err.message,
+        error: {}
+    });
+});
+
 app.listen(config.PORT, () => {
     console.log('⚡️ [BOT CONSILIO] Express server is listening.');
 
