@@ -3,7 +3,7 @@ import config from '../config/variables';
 import utils from '../utils';
 import send from '../app/send';
 import receive from '../app/receive';
-import structjson from '../utils/structjson.js';
+import structjson from '../utils/structjson';
 
 const credentials = {
     credentials: {

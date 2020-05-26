@@ -96,7 +96,7 @@ function valueProtoToJson(proto) {
     }
 }
 
-module.exports = {
+export default {
     jsonToStructProto,
     structProtoToJson,
 };
