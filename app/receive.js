@@ -597,53 +597,113 @@ const handleDFAObj = {
         const userDB = await userModel.getUserDB(sender);
         const event = await calendarModel.getEvent(sender);
         
-        send.sendTypingOn(sender);
-        handleMessages(messages, sender);
-        if (parameters.fields.date.stringValue && parameters.fields.time.stringValue) {
-            const date = parameters.fields.date.stringValue;
-            const time = parameters.fields.time.stringValue;
-            const dateTimeStart = new Date(Date.parse(date.split('T')[0] + 'T' + time.split('T')[1].split('-')[0] + '-03:00'));
-            const dateTimeEnd = new Date(new Date(dateTimeStart).setHours(dateTimeStart.getHours() + 1));
-            const appointmentTimeString = moment(dateTimeStart).locale('pt-br').format('LLLL');
-        
-            calendarAPI.updateCalendarEvent(dateTimeStart, dateTimeEnd, event.eventID).then((res) => {
+        const [date, time] = [parameters.fields.date.stringValue, parameters.fields.time.stringValue];
 
-                const event = res.data;
-                mysql.execQuery(`UPDATE calendar_events SET start = '${moment(event.start.dateTime).format('YYYY-MM-DD HH:mm:ss')}', end = '${moment(event.end.dateTime).format('YYYY-MM-DD HH:mm:ss')}' WHERE senderID='${sender}'`).catch(err => {
-                    console.log('❌ ERRO: ', err);
+        let missingSlots = [];
+        if (!date) { missingSlots.push('data'); }
+        if (!time) { missingSlots.push('horário'); }
+
+        if (missingSlots.length === 1) {
+            const dateTimeStart = new Date(Date.parse(date.split('T')[0] + 'T' + date.split('T')[1].split('-')[0] + '-03:00'));
+
+            calendarAPI.slotsFromEvents(dateTimeStart).then((resTime) => {
+                let replies = [];
+                resTime.forEach(function (time) {
+                    const hour = moment(time).format('HH:mm');
+                    replies.push({
+                        'content_type': 'text',
+                        'title': hour,
+                        'payload': hour
+                    });
                 });
+                let text = 'Ótimo dia, qual o melhor horário para esse novo agendamento?';
+                send.sendQuickReply(sender, text, replies);
+            });
 
-                setTimeout(function() {
-                    const text = `${userDB.first_name}, reagendei aqui! ✌ \nTe aguardamos aqui 📆 ${appointmentTimeString}.`;
-                    send.sendTextMessage(sender, text);
-                }, 1000);
-                setTimeout(function() {
-                    let buttons = [
-                        {
-                            type:'web_url',
-                            url:'http://bit.ly/humbertoconsilio',
-                            title:'Chamar no WhatsApp'
-                        },
-                        {
-                            type:'phone_number',
-                            title:'Ligar agora',
-                            payload:'+5562983465454',
-                        },
-                        {
-                            type:'postback',
-                            title:'Falar com humano',
-                            payload:'Falar com humano'
-                        }
-                    ];
+        }
+        else if (missingSlots.length === 2) {
+            const today = moment().format();
+            const dateTimeStart = new Date(Date.parse(today.split('T')[0] + 'T' + today.split('T')[1].split('-')[0] + '-03:00'));
+            const dateTimeEnd = new Date(moment(dateTimeStart).add(7, 'days'));
+
+            calendarAPI.daysFromSlots(dateTimeStart, dateTimeEnd).then((resTime) => {
+                let days = [];
+                let daysRefine = [];
+                resTime.forEach(function (time) {
+                    moment.locale('pt-BR');
+                    const day = moment(time.startDate).format('DD');
+                    const month = moment(time.startDate).format('MM');
+                    const weekDay = moment(time.startDate).format('dddd');
+
+                    days.push({
+                        day: day,
+                        month: month,
+                        weekDay: weekDay
+                    });
+                    daysRefine = days.filter(function (a) {
+                        return !this[JSON.stringify(a)] && (this[JSON.stringify(a)] = true);
+                    }, Object.create(null));
+                });
+                let replies = [];
+                daysRefine.forEach(function (day) {
+                    replies.push({
+                        'content_type': 'text',
+                        'title': `${day.weekDay.substring(0, 3)} - ${day.day}/${day.month}`,
+                        'payload': `${day.weekDay.substring(0, 3)} - ${day.day}/${day.month}`
+                    });
+                });
+                let text = 'Entendi. 😊 \nPara qual dia gostaria de alterar sua consulta?';
+                send.sendQuickReply(sender, text, replies);
+            });
+        } else {
+            send.sendTypingOn(sender);
+            handleMessages(messages, sender);
+            if (parameters.fields.date.stringValue && parameters.fields.time.stringValue) {
+                const date = parameters.fields.date.stringValue;
+                const time = parameters.fields.time.stringValue;
+                const dateTimeStart = new Date(Date.parse(date.split('T')[0] + 'T' + time.split('T')[1].split('-')[0] + '-03:00'));
+                const dateTimeEnd = new Date(new Date(dateTimeStart).setHours(dateTimeStart.getHours() + 1));
+                const appointmentTimeString = moment(dateTimeStart).locale('pt-br').format('LLLL');
+        
+                calendarAPI.updateCalendarEvent(dateTimeStart, dateTimeEnd, event.eventID).then((res) => {
+
+                    const event = res.data;
+                    mysql.execQuery(`UPDATE calendar_events SET start = '${moment(event.start.dateTime).format('YYYY-MM-DD HH:mm:ss')}', end = '${moment(event.end.dateTime).format('YYYY-MM-DD HH:mm:ss')}' WHERE senderID='${sender}'`).catch(err => {
+                        console.log('❌ ERRO: ', err);
+                    });
+
+                    setTimeout(function () {
+                        const text = `${userDB.first_name}, reagendei aqui! ✌ \nTe aguardamos aqui 📆 ${appointmentTimeString}.`;
+                        send.sendTextMessage(sender, text);
+                    }, 1000);
+                    setTimeout(function () {
+                        let buttons = [
+                            {
+                                type: 'web_url',
+                                url: 'http://bit.ly/humbertoconsilio',
+                                title: 'Chamar no WhatsApp'
+                            },
+                            {
+                                type: 'phone_number',
+                                title: 'Ligar agora',
+                                payload: '+5562983465454',
+                            },
+                            {
+                                type: 'postback',
+                                title: 'Falar com humano',
+                                payload: 'Falar com humano'
+                            }
+                        ];
     
-                    send.sendButtonMessage(sender, 'Caso tenha ficado alguma dúvida, fique à vontade de conversar com a gente!', buttons);
-                }, 4000);
+                        send.sendButtonMessage(sender, 'Caso tenha ficado alguma dúvida, fique à vontade de conversar com a gente!', buttons);
+                    }, 4000);
                
-            }).catch((erro) => {
-                console.log('ERRO', erro);
-                const text = `Opps o horário ${appointmentTimeString}, não está disponível. Vamos tentar outro?`;
-                send.sendTextMessage(sender, text);
-            }); 
+                }).catch((erro) => {
+                    console.log('ERRO', erro);
+                    const text = `Opps o horário ${appointmentTimeString}, não está disponível. Vamos tentar outro?`;
+                    send.sendTextMessage(sender, text);
+                });
+            }
         }
     },
     'input.schedule.cancel': async (sender) => {
@@ -666,8 +726,8 @@ const handleDFAObj = {
                     },
                     {
                         'content_type': 'text',
-                        'title': 'Não',
-                        'payload': 'Não'
+                        'title': 'Reagendar avaliação',
+                        'payload': 'Reagendar avaliação'
                     }
                 ];
                 send.sendQuickReply(sender, text, replies);
