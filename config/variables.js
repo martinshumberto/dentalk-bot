@@ -16,7 +16,8 @@ const ENV_VARS = [
     'GOOGLE_PROJECT_ID',
     'GOOGLE_LANGUAGE_CODE',
     'GOOGLE_PRIVATE_KEY',
-    'GOOGLE_CALENDAR_ID'
+    'GOOGLE_CALENDAR_ID',
+    'SMS_API_KEY'
 ];
 
 export default {
@@ -42,6 +43,8 @@ export default {
     GOOGLE_PRIVATE_KEY: process.env.GOOGLE_PRIVATE_KEY,
     
     GOOGLE_CALENDAR_ID: process.env.GOOGLE_CALENDAR_ID,
+
+    SMS_API_KEY: process.env.SMS_API_KEY,
     
 
     get mPlatfom() {

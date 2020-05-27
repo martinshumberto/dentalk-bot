@@ -61,7 +61,7 @@ const sendPassThread = (senderID) => {
                 recipient: {
                     id: senderID
                 },
-                target_app_id: config.FB_PAGE_ID
+                target_app_id: config.FB_APP_ID
             }
         },
         (error, _res, body) => {
