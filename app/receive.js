@@ -4,6 +4,7 @@ import { struct } from 'pb-util';
 import send from './send';
 import utils from '../utils';
 import mysql from '../config/mysql';
+import config from '../config/variables';
 import dialogflowAPI from '../services/dialogflow.service';
 import facebookAPI from '../services/facebook.service';
 import calendarAPI from '../services/calendar.service';
@@ -316,45 +317,6 @@ const handleDFAObj = {
                         const text = 'Que bom te ver por aqui novamente. No que posso te ajudar hoje?';
                         resolve(send.sendQuickReply(sender, text, replies));
                     }
-                }, 1000);
-            });
-        };
-
-        const restart = () => {
-            return new Promise(function(resolve) {
-                send.sendTypingOn(sender);
-                setTimeout(function() {
-                    let replies = [
-                        {
-                            'content_type': 'text',
-                            'title': 'Agendar avaliação',
-                            'payload': 'Agendar avaliação'
-                        },
-                        {
-                            'content_type': 'text',
-                            'title': 'Verificar avaliação',
-                            'payload': 'Verificar avaliação'
-                        },
-                        {
-                            'content_type': 'text',
-                            'title': 'Cancelar avaliação',
-                            'payload': 'Cancelar avaliação'
-                        },
-                        {
-                            'content_type': 'text',
-                            'title': 'Conhecer a clínica',
-                            'payload': 'Conhecer a clínica'
-                        },
-                        {
-                            'content_type': 'text',
-                            'title': 'Tratamentos',
-                            'payload': 'Tratamentos'
-                        }
-                    ];
-                    
-                    const text = 'Quer falar sobre outro assunto? 🤓 \nTenho algumas sugestões aqui para você:';
-                    resolve(send.sendQuickReply(sender, text, replies));
-                    
                 }, 1000);
             });
         };
@@ -923,6 +885,217 @@ const handleDFAObj = {
             send.sendQuickReply(sender, text, replies);
         }, 2000);
     },
+    'input.contact': (sender) => {
+        send.sendTypingOn(sender);
+        setTimeout(function() {
+            const text = 'Para falar conosco durante o horário comercial. \n\n(62) 3940-4050 ☎\n(62) 99521-3531 📲';
+            send.sendTextMessage(sender, text);
+        }, 1000);
+        setTimeout(function() {
+            let buttons = [
+                {
+                    type:'web_url',
+                    url:'http://bit.ly/humbertoconsilio',
+                    title:'Chamar no WhatsApp'
+                },
+                {
+                    type:'phone_number',
+                    title:'Ligar agora',
+                    payload:'+5562983465454',
+                }
+            ];
+            send.sendButtonMessage(sender, 'Ou basta escolher abaixo que te transfiro.', buttons);
+        }, 1000);
+    },
+    'input.how_it_works': (sender) => {
+        send.sendTypingOn(sender);
+        setTimeout(function() {
+            const text = `Aqui na ${config.NAME_COMPANY} acreditamos que para entender todas as suas necessidades e oferecer o tratamento mais adequando, é necessário te conhecermos primeiramente! \nPor isso, você pode agendar uma avaliação sem compromisso. Após essa avaliação, falaremos sobre valores e as melhores formas de conduzir o seu tratamento.`;
+            send.sendTextMessage(sender, text);
+        }, 1000);
+        setTimeout(function() {
+            let buttons = [
+                {
+                    type:'postback',
+                    payload:'SCHEDULE_APPOINTMENT',
+                    title:'Ok, agendar agora'
+                },
+                {
+                    type:'web_url',
+                    url:'http://bit.ly/humbertoconsilio',
+                    title:'Ok, chamar no WhatsApp'
+                }
+            ];
+            send.sendButtonMessage(sender, 'O que acha de continuarmos?', buttons);
+        }, 1000);
+    },
+    'input.payment_methods': (sender) => {
+        send.sendTypingOn(sender);
+        setTimeout(function() {
+            const text = 'Aceitamos todas as bandeiras de cartões de crédito, dinheiro, cheque e boleto. Venha fazer uma avaliação e descobrir as possibilidades que podemos oferecer para você! 😉';
+            send.sendTextMessage(sender, text);
+        }, 1000);
+    },
+    'input.address': (sender) => {
+        send.sendTypingOn(sender);
+        setTimeout(function() {
+            const text = 'Funcionamos de Segunda a Sexta das 08h as 18h.\nNa rua Av. do Comércio, Nº 25 - Sala 502 - Vila Maria José.';
+            send.sendTextMessage(sender, text);
+        }, 1000);
+        setTimeout(function() {
+            let buttons = [
+                {
+                    type:'web_url',
+                    url:'http://bit.ly/humbertoconsilio',
+                    title:'Chamar no WhatsApp'
+                },
+                {
+                    type:'web_url',
+                    url:'https://goo.gl/maps/yuL1CR8LwRFA3nWJ8',
+                    title:'Localização (Mapa)'
+                },
+                {
+                    type:'phone_number',
+                    title:'Ligar agora',
+                    payload:'+5562983465454',
+                }
+            ];
+            send.sendButtonMessage(sender, 'Tenho mais algumas opções para você:', buttons);
+        }, 2000);
+    },
+    'input.about': (sender) => {
+        send.sendTypingOn(sender);
+        setTimeout(function() {
+            const text = 'Desculpe por não me apresentar! 😬';
+            send.sendTextMessage(sender, text);
+        }, 1000);
+        setTimeout(function() {
+            const text = `Eu sou a Lary, atendente virtual da ${config.NAME_COMPANY}. 🤖`;
+            send.sendTextMessage(sender, text);
+        }, 1000);
+    },
+    'input.corona': (sender) => {
+        send.sendTypingOn(sender);
+        setTimeout(function() {
+            const text = 'Espero que esteja tudo bem!';
+            send.sendTextMessage(sender, text);
+        }, 1000);
+        setTimeout(function() {
+            let buttons = [
+                {
+                    type: 'postback',
+                    title: 'Cancelar consulta',
+                    payload: 'CANCEL_APPOINTMENT',
+                },
+                {
+                    type:'web_url',
+                    url:'https://coronavirus.saude.gov.br/',
+                    title:'Informações COVID-19'
+                },
+            ];
+            send.sendButtonMessage(sender, 'Tenho algumas sugestões sobre esse assunto.', buttons);
+        }, 2000);
+    },
+    'input.plans': (sender) => {
+        send.sendTypingOn(sender);
+        setTimeout(function() {
+            const text = 'Infelizmente não possuímos convênios, mas acreditamos que podemos apresentar as melhores soluções para você!';
+            send.sendTextMessage(sender, text);
+        }, 1000);
+        setTimeout(function() {
+            let text = 'Agende sua avaliação sem compromisso! 😉';
+            let replies = [
+                {
+                    'content_type': 'text',
+                    'title': 'Agendar agora',
+                    'payload': 'Agendar agora'
+                }
+            ];
+            send.sendQuickReply(sender, text, replies);
+        }, 2000);
+    },
+    'input.recommendations': (sender) => {
+        send.sendTypingOn(sender);
+        setTimeout(function() {
+            const text = 'Nossa! De imediato já desejo uma boa recuperação 🙏.\nVeja as recomendações que temos disponíveis aqui.\nClick no card da recomendação que você está precisando 👇';
+            send.sendTextMessage(sender, text);
+        }, 1000);
+        setTimeout(function() {
+            let elements = [
+                {
+                    title:'Lentes de contato',
+                    image_url:'https://afetoodontologia.com.br/wp-content/uploads/elementor/thumbs/afeto-odontologia-lente-de-contato-opux763t0jnd31c6mnev3e4vwbgjayqwwwunthhte6.jpg',
+                    subtitle:'As lentes de contato dental se tornaram as queridinhas das famosas e famosos que transformam os seus sorrisos através deste método.',
+                    default_action: {
+                        type: 'web_url',
+                        url: 'https://consilio.com.br/',
+                    },
+                    buttons: [{
+                        type: 'postback',
+                        title: 'Agendar consulta',
+                        payload: 'SCHEDULE_APPOINTMENT',
+                    }]      
+                },
+                {
+                    title:'Bruxismo',
+                    image_url:'https://afetoodontologia.com.br/wp-content/uploads/elementor/thumbs/topo-oop900sny7228bbfgnuad6ta0d0uaerpe3v5tbnmps.png',
+                    subtitle:'Na correria do dia a dia quando chegamos em casa o que mais queremos é relaxar e dormir.',
+                    default_action: {
+                        type: 'web_url',
+                        url: 'https://consilio.com.br/',
+                    },
+                    buttons: [{
+                        type: 'postback',
+                        title: 'Agendar consulta',
+                        payload: 'SCHEDULE_APPOINTMENT',
+                    }]      
+                },
+                {
+                    title:'Siso',
+                    image_url:'https://afetoodontologia.com.br/wp-content/uploads/elementor/thumbs/cirurgia-siso-onojy8ieoywu8k2ji5ddwg6wle355k04160892ty24.png',
+                    subtitle:'Os cuidados pós-operatórios são muito importantes, pois eles garantem uma boa recuperação e cicatrização.',
+                    default_action: {
+                        type: 'web_url',
+                        url: 'https://consilio.com.br/',
+                    },
+                    buttons: [{
+                        type: 'postback',
+                        title: 'Agendar consulta',
+                        payload: 'SCHEDULE_APPOINTMENT',
+                    }]      
+                },
+                {
+                    title:'Clareamento',
+                    image_url:'https://afetoodontologia.com.br/wp-content/uploads/elementor/thumbs/recomenda%C3%A7%C3%A3o-pos-clareamento-dent%C3%A1rio-ooqmhelg4xmx83rbfoassnvqqst800qkb4wi1mdqkg.png',
+                    subtitle:'Após realizar um clareamento dentário os dentes estão mais sensíveis e suscetíveis a manchas.',
+                    default_action: {
+                        type: 'web_url',
+                        url: 'https://consilio.com.br/',
+                    },
+                    buttons: [{
+                        type: 'postback',
+                        title: 'Agendar consulta',
+                        payload: 'SCHEDULE_APPOINTMENT',
+                    }]      
+                },
+                {
+                    title:'Aparelho ortodôntico',
+                    image_url:'https://afetoodontologia.com.br/wp-content/uploads/elementor/thumbs/Ortodontia_1-onojhdao1ztlwgkjzuwe5pf4uh81131idokk8bu9po.png',
+                    subtitle:'Quem faz um tratamento ortodôntico almeja ter os dentes alinhados e aquele sorriso dos sonhos.',
+                    default_action: {
+                        type: 'web_url',
+                        url: 'https://consilio.com.br/',
+                    },
+                    buttons: [{
+                        type: 'postback',
+                        title: 'Agendar consulta',
+                        payload: 'SCHEDULE_APPOINTMENT',
+                    }]      
+                }
+            ];
+            send.sendGenericMessage(sender, elements);
+        }, 2000);
+    },
     'talk.human': (sender) => {
         send.sendTypingOn(sender);
         facebookAPI.sendPassThread(sender);
@@ -1025,6 +1198,9 @@ const receivedPbObj = {
     },
     'SCHEDULE_APPOINTMENT': (senderID) => {
         dialogflowAPI.sendEventToDialogFlow(senderID, 'schedule');
+    },
+    'CANCEL_APPOINTMENT': (senderID) => {
+        dialogflowAPI.sendEventToDialogFlow(senderID, 'schedule_cancel');
     },
     'DEFAULT': (senderID, payload) => {
         send.sendTextMessage(senderID, payload);
