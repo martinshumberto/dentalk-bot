@@ -1,5 +1,5 @@
 build/
-server/public/
+**/public/
 node_modules/
 .env
 ._*
