@@ -1,11 +1,12 @@
 import mysql from 'mysql';
+import config from './variables';
 
 const connection = mysql.createConnection({
-    host     : '198.58.109.236',
-    port     : 3306,
-    user     : 'dentalk',
-    password : '!CCOKRQ1Ca1x',
-    database : 'dentalk'
+    host     : config.DB_HOST,
+    port     : config.DB_PORT || 3306,
+    user     : config.DB_USER,
+    password : config.DB_PASSWORD,
+    database : config.DB_DATABASE
 });
 
 function execQuery(sqlQry){
