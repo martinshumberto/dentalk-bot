@@ -8,6 +8,7 @@ import config from '../config/variables';
 import dialogflowAPI from '../services/dialogflow.service';
 import facebookAPI from '../services/facebook.service';
 import calendarAPI from '../services/calendar.service';
+import smsAPI from '../services/sms.service';
 import calendarModel from '../models/calendar.model';
 import userModel from '../models/user.model';
 
@@ -1156,9 +1157,15 @@ const handleDFAObj = {
             send.sendGenericMessage(sender, elements);
         }, 2000);
     },
-    'talk.human': (sender) => {
+    'talk.human': async (sender) => {
         send.sendTypingOn(sender);
+        const userDB = await userModel.getUserDB(sender);
         facebookAPI.sendPassThread(sender);
+        smsAPI.textMessageService.send(sender, 'Verifique sua caixa de entrada do Messenger, estão chamando por você.', ['5562983465454'], data => console.log('SMS API CALL: ', data));
+        setTimeout(function() {
+            const text = `Tudo bem ${userDB.first_name}. 👌 \nEstou te transferindo para um dos nossos atendentes humanos. Aguarde que logo ele irá aparecer...`;
+            send.sendTextMessage(sender, text);
+        }, 1000);
     },
     'input.unknown': (sender, messages) => {
         send.sendTypingOn(sender);
