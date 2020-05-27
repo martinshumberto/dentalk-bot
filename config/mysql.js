@@ -23,6 +23,12 @@ function execQuery(sqlQry){
                 resolve(response);
             }
         });
+        connection.on('close', function (err) {
+            console.log('SQL CONNECTION CLOSED.' + err);
+        });
+        connection.on('error', function (err) {
+            console.log('SQL CONNECTION ERROR: ' + err);
+        });
     });
 }
 
