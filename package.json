@@ -2,15 +2,15 @@
   "name": "dentalk-bot",
   "version": "1.0.0",
   "description": "",
-  "private": true,
+  "main": "app.js",
   "scripts": {
-    "dev": "nodemon --exec babel-node ./app.js --debug",
-    "clean": "rm -rf build && mkdir build",
+    "dev": "NODE_ENV=development nodemon --exec babel-node ./server/app.js --debug",
+    "clean": "rm -rf server/build && mkdir server/build",
     "build-server": "webpack",
     "build": "npm run clean && npm run build-server",
-    "watch": "webpack --progress --colors --watch",
-    "start": "NODE_ENV=production node build/main.bundle.js",
-    "debug": "node --debug ./build/app.js",
+    "watch": "NODE_ENV=development webpack --progress --colors --watch",
+    "start": "NODE_ENV=production node server/build/main.bundle.js",
+    "debug": "node --debug ./server/build/app.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
