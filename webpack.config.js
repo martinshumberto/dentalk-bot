@@ -2,14 +2,16 @@ const path = require('path');
 const nodeExternals = require('webpack-node-externals');
 
 module.exports = {
-    mode: 'development',
+    mode: 'production',
     entry: [
-        './app.js'
+        './server/app.js'
     ],
+    node: {
+        __dirname: false,
+    },
     output: {
         filename: '[name].bundle.js',
-        publicPath: '/',
-        path: path.resolve(__dirname, 'build'),
+        path: path.resolve(__dirname, './server/build'),
     },
     module: {
         rules: [
@@ -25,7 +27,7 @@ module.exports = {
     },
     devtool: 'sourcemap',
     devServer: {
-        contentBase: './build',
+        contentBase: path.resolve('./server')
     },
     optimization: {
         splitChunks: {

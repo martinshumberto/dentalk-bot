@@ -12,6 +12,7 @@ import config from './config/variables';
 import mysql from './config/mysql';
 import profileRoute from './routes/profile.route';
 import webhookRoute from './routes/webhook.route';
+import path from 'path';
 
 dotenv.config();
 
@@ -19,7 +20,7 @@ const app = express();
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cors());
-app.use(express.static(__dirname + '/static'));
+app.use(express.static(path.join(__dirname, '../public')));
 
 config.checkEnv();
 
@@ -39,32 +40,9 @@ app.get('/events', async (req, res) =>{
     res.status(200).send(events);
 });
 
-/*
- ** Middleware configuration
- */
-
-// error handlers
-
-// development error handler
-// will print stacktrace
-if (app.get('env') === 'development') {
-    app.use(function(err, req, res) {
-        res.status(err.status || 500);
-        res.render('error', {
-            message: err.message,
-            error: err
-        });
-    });
-}
-
-// production error handler
-// no stacktraces leaked to user
-app.use(function(err, req, res) {
-    res.status(err.status || 500);
-    res.render('error', {
-        message: err.message,
-        error: {}
-    });
+app.get('/', (req, res) => {
+    console.log('DIRANME', __dirname);
+    res.sendFile(path.join(__dirname, '/../public/index.html'));
 });
 
 app.listen(config.PORT, () => {
@@ -86,11 +64,4 @@ app.listen(config.PORT, () => {
         console.log('⚡️ [BOT CONSILIO] Test app by messaging:');
         console.log('⚡️ [BOT CONSILIO] https://m.me/' + config.FB_PAGE_ID);
     }
-});
-
-/*
- ** Base view
- */
-app.get('/', (req, res) => {
-    res.send('⚡️[BOT CONSILIO] Hello world!');
 });
