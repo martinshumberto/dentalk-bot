@@ -6,8 +6,9 @@
   "scripts": {
     "dev": "NODE_ENV=development nodemon --exec babel-node ./server/app.js --debug",
     "clean": "rm -rf server/build && mkdir server/build",
+    "build-client": "cd client && npm run build",
     "build-server": "webpack",
-    "build": "npm run clean && npm run build-server",
+    "build": "npm run clean && npm run build-client && npm run build-server",
     "watch": "NODE_ENV=development webpack --progress --colors --watch",
     "start": "NODE_ENV=production node server/build/main.bundle.js",
     "debug": "node --debug ./server/build/app.js",
@@ -25,7 +26,6 @@
     "comtele-sdk": "^1.1.6",
     "cors": "^2.8.5",
     "dialogflow": "^1.2.0",
-    "dialogflow-fulfillment": "^0.6.1",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
     "googleapis": "^39.2.0",
