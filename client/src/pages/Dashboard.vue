@@ -13,7 +13,7 @@
             {{stats.value}}
           </div>
           <div class="stats" slot="footer">
-            <i :class="stats.footerIcon"></i> {{stats.footerText}}
+            <a href="#"><i :class="stats.footerIcon"></i> {{stats.footerText}}</a>
           </div>
         </stats-card>
       </div>
@@ -23,47 +23,48 @@
     <div class="row">
 
       <div class="col-12">
-        <chart-card title="Users behavior"
-                    sub-title="24 Hours performance"
+        <chart-card title="Horários de pico"
+                    sub-title="Perfomance dentro de 24 horas"
                     :chart-data="usersChart.data"
                     :chart-options="usersChart.options">
           <span slot="footer">
-            <i class="ti-reload"></i> Updated 3 minutes ago
+            <a href="#"><i class="ti-reload"></i> Atualizar agora</a>
           </span>
           <div slot="legend">
-            <i class="fa fa-circle text-info"></i> Open
-            <i class="fa fa-circle text-danger"></i> Click
-            <i class="fa fa-circle text-warning"></i> Click Second Time
+            <i class="fa fa-circle text-info"></i> Iniciou
+            <i class="fa fa-circle text-warning"></i> Telefone
+            <i class="fa fa-circle text-danger"></i> Telefone & E-mail
           </div>
         </chart-card>
       </div>
 
       <div class="col-md-6 col-12">
-        <chart-card title="Email Statistics"
-                    sub-title="Last campaign performance"
+        <chart-card title="Estastísticas de SMS"
+                    sub-title="Dados totais desde o início"
                     :chart-data="preferencesChart.data"
                     chart-type="Pie">
           <span slot="footer">
-            <i class="ti-timer"></i> Campaign set 2 days ago</span>
+            <a href="#"><i class="ti-reload"></i> Atualizar agora</a>
+          </span>
           <div slot="legend">
-            <i class="fa fa-circle text-info"></i> Open
+            <i class="fa fa-circle text-info"></i> Abriu
             <i class="fa fa-circle text-danger"></i> Bounce
-            <i class="fa fa-circle text-warning"></i> Unsubscribe
+            <i class="fa fa-circle text-warning"></i> Cancelou
           </div>
         </chart-card>
       </div>
 
       <div class="col-md-6 col-12">
-        <chart-card title="2015 Sales"
-                    sub-title="All products including Taxes"
+        <chart-card title="Comparação de contatos e avaliações"
+                    sub-title="Perfomance anual da quantidade de avaliações e contatos"
                     :chart-data="activityChart.data"
                     :chart-options="activityChart.options">
           <span slot="footer">
-            <i class="ti-check"></i> Data information certified
+            <a href="#"><i class="ti-reload"></i> Atualizar agora</a>
           </span>
           <div slot="legend">
-            <i class="fa fa-circle text-info"></i> Tesla Model S
-            <i class="fa fa-circle text-warning"></i> BMW 5 Series
+            <i class="fa fa-circle text-info"></i> Contatos
+            <i class="fa fa-circle text-warning"></i> Avaliações
           </div>
         </chart-card>
       </div>
@@ -88,48 +89,48 @@ export default {
       statsCards: [
         {
           type: "warning",
-          icon: "ti-server",
-          title: "Capacity",
-          value: "105GB",
-          footerText: "Updated now",
+          icon: "ti-user",
+          title: "Leads",
+          value: "105",
+          footerText: "Atualizar agora",
           footerIcon: "ti-reload"
         },
         {
           type: "success",
-          icon: "ti-wallet",
-          title: "Revenue",
-          value: "$1,345",
-          footerText: "Last day",
-          footerIcon: "ti-calendar"
+          icon: "ti-calendar",
+          title: "Avaliações",
+          value: "2",
+          footerText: "Atualizar agora",
+          footerIcon: "ti-reload"
         },
         {
           type: "danger",
           icon: "ti-pulse",
           title: "Errors",
           value: "23",
-          footerText: "In the last hour",
-          footerIcon: "ti-timer"
+          footerText: "Atualizar agora",
+          footerIcon: "ti-reload"
         },
         {
           type: "info",
-          icon: "ti-twitter-alt",
-          title: "Followers",
-          value: "+45",
-          footerText: "Updated now",
+          icon: "ti-mobile",
+          title: "Contatos",
+          value: "45",
+          footerText: "Atualizar agora",
           footerIcon: "ti-reload"
         }
       ],
       usersChart: {
         data: {
           labels: [
-            "9:00AM",
-            "12:00AM",
-            "3:00PM",
-            "6:00PM",
-            "9:00PM",
-            "12:00PM",
-            "3:00AM",
-            "6:00AM"
+            "9:00 AM",
+            "12:00 AM",
+            "15:00 PM",
+            "18:00 PM",
+            "19:00 PM",
+            "00:00 PM",
+            "03:00 AM",
+            "06:00 AM"
           ],
           series: [
             [287, 385, 490, 562, 594, 626, 698, 895, 952],
@@ -156,17 +157,17 @@ export default {
         data: {
           labels: [
             "Jan",
-            "Feb",
+            "Fev",
             "Mar",
-            "Apr",
+            "Abr",
             "Mai",
             "Jun",
             "Jul",
-            "Aug",
-            "Sep",
-            "Oct",
+            "Ago",
+            "Set",
+            "Out",
             "Nov",
-            "Dec"
+            "Dez"
           ],
           series: [
             [542, 543, 520, 680, 653, 753, 326, 434, 568, 610, 756, 895],

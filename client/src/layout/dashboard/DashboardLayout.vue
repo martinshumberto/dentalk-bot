@@ -2,14 +2,15 @@
   <div class="wrapper">
     <side-bar>
       <template slot="links">
-        <sidebar-link to="/dashboard" name="Dashboard" icon="fa fa-stream"/>
-        <sidebar-link to="/leads" name="Leads" icon="fa fa-user"/>
+        <sidebar-link to="/dashboard" name="Dashboard" icon="fa fa-tachometer-alt"/>
+        <sidebar-link to="/agenda" name="Agenda" icon="far fa-calendar"/>
+        <sidebar-link to="/leads" name="Leads" icon="far fa-user-circle"/>
       </template>
       <mobile-menu>
         <li class="nav-item">
           <a class="nav-link" href="/leads">
-            <i class="ti-user"></i>
-            <p>Leads</p>
+            <i class="fa fa-user"></i>
+            <p>Meus Dados</p>
           </a>
         </li>
         <drop-down class="nav-item"

@@ -14,6 +14,11 @@ const routes = [
                 name: 'Listagem de leads',
                 component: () => import('@/pages/Leads/LeadsList.vue')
             },
+            {
+                path: 'agenda',
+                name: 'Agenda',
+                component: () => import('@/pages/Calendar/Calendar.vue')
+            },
         ]
     },
     { path: '*', component: () => import('@/pages/NotFoundPage.vue') }
