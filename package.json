@@ -4,7 +4,7 @@
   "description": "",
   "main": "app.js",
   "scripts": {
-    "dev-server": "NODE_ENV=development nodemon --exec babel-node ./server/app.js --debug && cd client && npm run serve",
+    "dev-server": "NODE_ENV=development nodemon --exec babel-node ./server/app.js --debug",
     "dev-client": "NODE_ENV=development cd client && npm run serve",
     "dev": "concurrently \"npm run dev-server\" \"npm run dev-client\"",
     "clean": "rm -rf server/build && mkdir server/build",
@@ -46,6 +46,7 @@
     "@babel/preset-env": "^7.9.6",
     "@babel/register": "^7.9.0",
     "@babel/runtime": "^7.9.2",
+    "babel-eslint": "^10.1.0",
     "babel-loader": "^8.1.0",
     "nodemon": "^2.0.3",
     "webpack": "^4.43.0",
