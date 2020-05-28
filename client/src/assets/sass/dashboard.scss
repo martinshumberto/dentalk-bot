@@ -1,0 +1,27 @@
+// First Configs
+@import "theme/variables";
+@import "theme/mixins";
+@import "theme/typography";
+// Core CSS
+@import "theme/misc";
+@import "theme/sidebar-and-main-panel";
+@import "theme/buttons";
+@import "theme/inputs";
+@import "theme/alerts";
+@import "theme/tables";
+@import "theme/checkbox-radio";
+@import "theme/navbars";
+@import "theme/footers";
+// Fancy Stuff
+@import "theme/dropdown";
+@import "theme/cards";
+@import "theme/chartist";
+@import "theme/responsive";
+// FonteAwesome
+@import "fontawesome/fontawesome";
+@import "fontawesome/solid";
+@import "fontawesome/brands";
+
+
+
+

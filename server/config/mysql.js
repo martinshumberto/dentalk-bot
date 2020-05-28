@@ -20,7 +20,7 @@ function execQuery(sqlQry){
                 }
             }
             else {
-                const response = results[0];
+                const response = results;
                 resolve(response);
             }
         });

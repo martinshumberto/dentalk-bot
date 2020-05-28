@@ -20,7 +20,10 @@ const app = express();
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cors());
-app.use(express.static(path.join(__dirname, '../public')));
+app.use(
+    process.env.NODE_ENV === 'development' ?
+        express.static(path.join(__dirname, 'public')) : express.static(path.join(__dirname, '../public'))
+);
 
 config.checkEnv();
 
@@ -31,18 +34,18 @@ config.checkEnv();
 webhookRoute(app);
 profileRoute(app);
 
-app.get('/leads', async (req, res) =>{
+app.get('/api/leads', async (req, res) => {
     const leads = await mysql.execQuery('SELECT * FROM leads');
     res.status(200).send(leads);
 });
-app.get('/events', async (req, res) =>{
+app.get('/api/events', async (req, res) => {
     const events = await mysql.execQuery('SELECT * FROM calendar_events');
     res.status(200).send(events);
 });
 
 app.get('/', (req, res) => {
-    console.log('DIRANME', __dirname);
-    res.sendFile(path.join(__dirname, '/../public/index.html'));
+    process.env.NODE_ENV === 'development' ?
+        res.sendFile(path.join(__dirname, 'public/index.html')) : res.sendFile(path.join(__dirname, '/../public/index.html'));
 });
 
 app.listen(config.PORT, () => {
