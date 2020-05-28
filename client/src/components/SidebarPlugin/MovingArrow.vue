@@ -17,7 +17,7 @@ export default {
      */
     arrowStyle() {
       return {
-        transform: `translate3d(0px, ${this.moveY}px, 0px)`
+        transform: `translate3d(-50px, ${this.moveY}px, 0px)`
       };
     }
   }
@@ -27,14 +27,19 @@ export default {
 $bg-nude: #f4f3ef !default;
 
 .moving-arrow {
-  border-right: 17px solid $bg-nude;
-  border-top: 17px solid transparent;
-  border-bottom: 17px solid transparent;
-  display: inline-block;
+  width: 200px;
+  height: 50px;
+  display: flex;
   position: absolute;
-  left: 243px;
-  top: 95px;
+  left: 80px;
+  top: 120px;
+  border-radius: 50px;
+  background: #238aff;
   transition: all 0.5s cubic-bezier(0.29, 1.42, 0.79, 1);
+  z-index: -1;
+-webkit-box-shadow: 0px 10px 30px -11px rgba(35,138,255,1);
+-moz-box-shadow: 0px 10px 30px -11px rgba(35,138,255,1);
+box-shadow: 0px 10px 30px -11px rgba(35,138,255,1);
 }
 @media (max-width: 992px) {
   .moving-arrow {

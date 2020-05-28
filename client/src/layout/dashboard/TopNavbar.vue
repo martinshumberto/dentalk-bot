@@ -15,14 +15,14 @@
         <ul class="navbar-nav ml-auto">
           <li class="nav-item">
             <a href="#" class="nav-link">
-              <i class="ti-user"></i>
+              <i class="fa fa-user"></i>
               <p>Meus Dados</p>
             </a>
           </li>
           <drop-down class="nav-item"
                      title="5 Notificações"
                      title-classes="nav-link"
-                     icon="ti-bell">
+                     icon="fa fa-bell">
             <a class="dropdown-item" href="#">Notificações 1</a>
             <a class="dropdown-item" href="#">Notificações 2</a>
             <a class="dropdown-item" href="#">Notificações 3</a>
@@ -31,10 +31,8 @@
           </drop-down>
           <li class="nav-item">
             <a href="#" class="nav-link">
-              <i class="ti-settings"></i>
-              <p>
-                Configurações
-              </p>
+              <i class="fa fa-cog"></i>
+              <p>Configurações</p>
             </a>
           </li>
         </ul>

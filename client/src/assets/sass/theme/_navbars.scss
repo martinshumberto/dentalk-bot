@@ -16,9 +16,9 @@
   box-shadow: 0 6px 10px -4px rgba(0, 0, 0, 0.15);
 
   &.navbar-light {
-    background-color: $bg-nude;
+    background-color: $light-blue-color;
     box-shadow: none;
-    border-bottom: 1px solid $medium-gray;
+    // border-bottom: 1px solid $medium-gray;
   }
   .navbar-toggler-right{
     float: right;
@@ -44,7 +44,7 @@
     }
     p{
       margin: 0px 0px;
-      color: #9A9A9A !important;
+      color: #1d2c39 !important;
       text-transform: uppercase;
       font-weight: 600;
       font-size: 12px;
@@ -52,7 +52,7 @@
       padding: 15px 0;
     }
     p:hover{
-      color: #403D39 !important;
+      color: #121d27 !important;
     }
   }
   .navbar-nav{

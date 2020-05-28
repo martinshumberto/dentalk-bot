@@ -3,7 +3,7 @@
   top: 0;
   bottom: 0;
   left: 0;
-  z-index: 1;
+  z-index: 9;
   background-size: cover;
   background-position: center center;
   .sidebar-wrapper {
@@ -13,7 +13,6 @@
     overflow-x: hidden;
     width: 260px;
     z-index: 4;
-    box-shadow: inset -1px 0px 0px 0px $medium-gray;
   }
   .sidebar-background {
     position: absolute;
@@ -36,7 +35,9 @@
 
   .logo {
     padding: 13px 0;
-    margin: 0 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 
     p {
       float: left;
@@ -56,13 +57,21 @@
 
       .logo-img{
         display: inline-block;
-        
-        img{
-          width: 40px;
-          height: 40px;
+        margin-top: 20px;
+
+        svg {
+          fill: #283746;
+          position: relative;
+          z-index: 999;
+          left: 0;
+          width: 180px;
+          display: flex;
+        }
+
+        img {
+          height: 38px;
           margin-left: 0px;
           margin-right: 10px;
-          border-radius: 40px;
           text-align: center;
         }
       }
@@ -71,9 +80,12 @@
 
   .nav {
     //margin-top: 20px;
+    flex-direction: column;
+    justify-content: center;
 
     .nav-item {
       width: 100%;
+      padding-left: 40px;
       .nav-link {
         margin: 10px 0px;
         padding-left: 25px;
@@ -87,7 +99,7 @@
       }
 
       &.active > .nav-link {
-        color: $primary-color;
+        color: $white-color;
         opacity: 1;
       }
     }
@@ -149,17 +161,24 @@
   &[data-active-color="danger"] {
     @include sidebar-active-color($danger-color);
   }
+  &[data-active-color="light-blue-color"] {
+    @include sidebar-active-color($light-blue-color);
+  }
 
 }
 
 .main-panel {
-  background-color: $bg-nude;
+  background-color: $light-blue-color;
   position: relative;
-  z-index: 2;
+  z-index: 99;
   float: right;
   width: $sidebar-width;
+  border-radius: 30px;
   min-height: 100%;
   overflow: auto;
+    -webkit-box-shadow: 18px 0px 54px -20px rgba(0,0,0,0.35);
+    -moz-box-shadow: 18px 0px 54px -20px rgba(0,0,0,0.35);
+    box-shadow: 18px 0px 54px -20px rgba(0,0,0,0.35);
 
   > .content {
     padding: 30px 15px;
