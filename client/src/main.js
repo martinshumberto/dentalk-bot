@@ -11,7 +11,7 @@ import 'vue-notifyjs/themes/default.css';
 Vue.use({
     install (Vue) {
         Vue.prototype.$axios = Axios.create({
-            baseURL: 'http://localhost:2000/api/'
+            baseURL: '/api/'
         });
     }
 });
