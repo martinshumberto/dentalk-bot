@@ -20,7 +20,10 @@ const app = express();
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cors());
-app.use(express.static(path.join(__dirname, '../public')));
+app.use(
+    process.env.NODE_ENV === 'development' ?
+        express.static(path.join(__dirname, 'public')) : express.static(path.join(__dirname, '../public'))
+);
 
 config.checkEnv();
 
@@ -41,8 +44,7 @@ app.get('/events', async (req, res) =>{
 });
 
 app.get('/', (req, res) => {
-    console.log('DIRANME', __dirname);
-    res.sendFile(path.join(__dirname, '/../public/index.html'));
+    process.env.NODE_ENV === 'development' ? res.sendFile(path.join(__dirname, 'public/index.html')) : res.sendFile(path.join(__dirname, '/../public/index.html'));
 });
 
 app.listen(config.PORT, () => {
