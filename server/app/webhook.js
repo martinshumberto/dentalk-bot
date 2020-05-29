@@ -1,5 +1,4 @@
 import config from '../config/variables';
-import utils from '../utils';
 import receive from './receive';
 import profile from './profile';
 import facebookAPI from '../services/facebook.service';
@@ -16,10 +15,10 @@ const messageHandler = async (req, res) => {
 
             body.entry.forEach(function(pageEntry) {
 
-                let hookEvent = pageEntry.messaging[0];
-                let senderPsid = hookEvent.sender.id;
+                // let hookEvent = pageEntry.messaging[0];
+                // let senderPsid = hookEvent.sender.id;
 
-                utils.setSessionandUser(senderPsid);
+                // console.log('pageEntry.messaging', pageEntry.messaging);
 
                 if (pageEntry.standby) {
                     pageEntry.standby.forEach(event => {

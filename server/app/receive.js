@@ -1281,6 +1281,8 @@ const receivedPostback = event => {
 
     var payload = event.postback.payload;
 
+    utils.setSessionandUser(senderID);
+
     console.log(
         '⚡️ [BOT CONSILIO] Received postback for user %d and page %d with payload \'%s\' ' +
       'at %d',
