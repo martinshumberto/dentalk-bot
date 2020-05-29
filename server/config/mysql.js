@@ -20,8 +20,15 @@ function execQuery(sqlQry){
                 }
             }
             else {
-                const response = results;
-                resolve(response);
+                const countResults = results.length
+
+                if (countResults > 1) {
+                    const response = results;
+                    resolve(response);
+                } else {
+                    const response = results[0];
+                    resolve(response);
+                }
             }
         });
         connection.on('close', function (err) {
