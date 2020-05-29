@@ -1,12 +1,17 @@
 import mysql from 'mysql';
 import config from './variables';
 
-const connection = mysql.createConnection({
+const connection = mysql.createPool({
+    connectionLimit : 100,
     host     : config.DB_HOST,
     port     : config.DB_PORT || 3306,
     user     : config.DB_USER,
     password : config.DB_PASSWORD,
-    database : config.DB_DATABASE
+    database: config.DB_DATABASE,
+    debug    :  true,
+    wait_timeout : 28800,
+    connect_timeout: 10,
+     queueLimit: 0 
 });
 
 function execQuery(sqlQry){
@@ -33,9 +38,15 @@ function execQuery(sqlQry){
         });
         connection.on('close', function (err) {
             console.log('SQL CONNECTION CLOSED.' + err);
+            connection.release();
+            reject(null, err);
+            throw err;
         });
         connection.on('error', function (err) {
             console.log('SQL CONNECTION ERROR: ' + err);
+            connection.release();
+            reject(null, err);
+            throw err;
         });
     });
 }
