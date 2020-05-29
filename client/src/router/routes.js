@@ -19,6 +19,11 @@ const routes = [
                 name: 'Agenda',
                 component: () => import('@/pages/Calendar/Calendar.vue')
             },
+            {
+                path: 'politica-de-privacidade',
+                name: 'Política de privacidade',
+                component: () => import('@/pages/PrivacyPolicy/PrivacyPolicy.vue')
+            },
         ]
     },
     { path: '*', component: () => import('@/pages/NotFoundPage.vue') }
