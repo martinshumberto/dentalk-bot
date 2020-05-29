@@ -1,0 +1,10 @@
+require('@babel/register');
+require("@babel/polyfill");
+
+const { resolve } = require('path')
+
+module.exports = {
+  config: resolve('./server/config', 'database.js'),
+  'migrations-path': resolve('./server/database', 'migrations'),
+  'seeders-path': resolve('./server/database', 'seeders'),
+}
