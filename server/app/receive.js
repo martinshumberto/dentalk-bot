@@ -1258,7 +1258,7 @@ const receivedMessage = event => {
 const receivedPbObj = {
     'get_started': async (senderID, payload) => {
         await utils.setSessionandUser(senderID);
-        dialogflowAPI.sendTextToDialogFlow(senderID, payload);
+        dialogflowAPI.sendEventToDialogFlow(senderID, 'welcome');
     },
     'VIEW_SITE': (senderID, payload) => {
         send.sendTextMessage(senderID, payload);
