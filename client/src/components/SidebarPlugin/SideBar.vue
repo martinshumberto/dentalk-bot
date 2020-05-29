@@ -24,7 +24,6 @@
         </slot>
       </ul>
       <moving-arrow :move-y="arrowMovePx">
-
       </moving-arrow>
     </div>
   </div>
@@ -104,7 +103,7 @@ export default {
     findActiveLink() {
       this.links.forEach((link, index) => {
         if (link.isActive()) {
-          this.activeLinkIndex = index;
+          this.activeLinkIndex = 'index';
         }
       });
     },
