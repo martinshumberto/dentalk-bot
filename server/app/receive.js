@@ -220,6 +220,8 @@ const handleDialogFlowResponse = (sender, response) => {
 const handleDFAObj = {
     'input.welcome': async (sender, messages, contexts, parameters) => {
         const user = utils.usersMap.get(sender);
+        utils.setSessionandUser(sender);
+
         const userDB = await mysql.execQuery(`SELECT * FROM leads WHERE senderID= '${sender}'`).catch(err => {
             console.log('❌ ERRO: ', err);
         });
@@ -1256,9 +1258,8 @@ const receivedMessage = event => {
  */
 
 const receivedPbObj = {
-    'get_started': async (senderID, payload) => {
-        await utils.setSessionandUser(senderID);
-        dialogflowAPI.sendEventToDialogFlow(senderID, 'welcome');
+    'get_started': (senderID, payload) => {
+        dialogflowAPI.sendTextToDialogFlow(senderID, payload);
     },
     'VIEW_SITE': (senderID, payload) => {
         send.sendTextMessage(senderID, payload);
