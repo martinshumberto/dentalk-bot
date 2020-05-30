@@ -15,4 +15,4 @@ util.inherits(TIMESTAMP, BaseTypes.ABSTRACT);
 
 TIMESTAMP.prototype.key = TIMESTAMP.key = 'TIMESTAMP';
 
-exports.TIMESTAMP = TIMESTAMP;
+export default TIMESTAMP;
