@@ -1,7 +1,6 @@
 'use strict';
 
 import { Model, DataTypes } from 'sequelize';
-import CustomDataTypes from '../utils/sequelize-timestamp';
 
 class CalendarEvents extends Model {
     static init(sequelize) {
@@ -12,8 +11,8 @@ class CalendarEvents extends Model {
             link: DataTypes.STRING(1234),
             summary: DataTypes.STRING,
             description: DataTypes.STRING,
-            start: CustomDataTypes.TIMESTAMP,
-            end: CustomDataTypes.TIMESTAMP
+            start: DataTypes.DATE,
+            end: DataTypes.DATE
         }, {
             sequelize 
         });
