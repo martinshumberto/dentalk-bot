@@ -8,11 +8,10 @@ import dotenv from 'dotenv';
 import express from 'express';
 import bodyParser from 'body-parser';
 import cors from 'cors';
+import routes from './routes';
 import config from './config/variables';
-import mysql from './config/mysql';
-import profileRoute from './routes/profile.route';
-import webhookRoute from './routes/webhook.route';
 import path from 'path';
+import './database';
 
 dotenv.config();
 
@@ -22,7 +21,8 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cors());
 app.use(
     process.env.NODE_ENV === 'development' ?
-        express.static(path.join(__dirname, 'public')) : express.static(path.join(__dirname, '../public'))
+        express.static(path.join(__dirname, 'public')) :
+        express.static(path.join(__dirname, '../public'))
 );
 
 config.checkEnv();
@@ -31,21 +31,12 @@ config.checkEnv();
  ** Routes configuration
  */
 
-webhookRoute(app);
-profileRoute(app);
-
-app.get('/api/leads', async (req, res) => {
-    const leads = await mysql.execQuery('SELECT * FROM leads');
-    res.status(200).send(leads);
-});
-app.get('/api/events', async (req, res) => {
-    const events = await mysql.execQuery('SELECT * FROM calendar_events');
-    res.status(200).send(events);
-});
+routes(app);
 
 app.get('/', (req, res) => {
     process.env.NODE_ENV === 'development' ?
-        res.sendFile(path.join(__dirname, 'public/index.html')) : res.sendFile(path.join(__dirname, '/../public/index.html'));
+        res.sendFile(path.join(__dirname, 'public/index.html')) :
+        res.sendFile(path.join(__dirname, '/../public/index.html'));
 });
 
 app.listen(config.PORT, () => {

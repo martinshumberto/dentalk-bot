@@ -1,8 +1,8 @@
 'use strict';
 import request from 'request';
 import config from '../config/variables';
-import mysql from '../config/mysql';
 import utils from '../utils';
+import Leads from '../models/Leads';
 
 /**
  * Send call to Facebook Graph API
@@ -292,13 +292,16 @@ const addUser = (callback, userId) => {
         async function(error, response, body) {
             if (!error && response.statusCode == 200) {
                 var user = JSON.parse(body);
-                if (user.first_name.length > 0) {
-                    const consulta = await mysql.execQuery(`SELECT * FROM leads WHERE senderID= '${userId}'`).catch(err => {
-                        console.log('❌ ERRO: ', err);
-                    });
+                if (user && user.first_name) {
+                    const consulta = await Leads.findOne({ where: { sender_id: userId } });
                     if (!consulta) {
-                        await mysql.execQuery(`INSERT INTO leads (senderID, first_name, last_name, profile_pic) VALUES ('${userId}', '${user.first_name}','${user.last_name}', '${user.profile_pic}')`).catch(err => {
-                            console.log('❌ ERRO: ', err);
+                        await Leads.create({
+                            sender_id: userId,
+                            first_name: user.first_name,
+                            last_name: user.last_name,
+                            profile_pic: user.profile_pic
+                        }).catch((err) => {
+                            console.log('❌ [BOT CONSILIO] MYSQL: ', err.parent.sqlMessage);
                         });
                     }
                     callback(user);

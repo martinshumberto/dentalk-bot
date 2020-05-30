@@ -3,14 +3,14 @@ import moment from 'moment';
 import { struct } from 'pb-util';
 import send from './send';
 import utils from '../utils';
-import mysql from '../config/mysql';
 import config from '../config/variables';
 import dialogflowAPI from '../services/dialogflow.service';
 import facebookAPI from '../services/facebook.service';
 import calendarAPI from '../services/calendar.service';
 import smsAPI from '../services/sms.service';
-import calendarModel from '../models/calendar.model';
-import userModel from '../models/user.model';
+
+import Calendar from '../models/CalendarEvents';
+import Leads from '../models/Leads';
 
 /**
  * Process message type card
@@ -222,9 +222,7 @@ const handleDFAObj = {
         const user = utils.usersMap.get(sender);
         utils.setSessionandUser(sender);
 
-        const userDB = await mysql.execQuery(`SELECT * FROM leads WHERE senderID= '${sender}'`).catch(err => {
-            console.log('❌ ERRO: ', err);
-        });
+        const userDB = await Leads.findOne({ where: { sender_id: sender } });
 
         const welcome = () => {
             return new Promise(function(resolve) {
@@ -357,14 +355,14 @@ const handleDFAObj = {
                 });
             } else {
                 if (phone && email) {
-                    mysql.execQuery(`UPDATE leads SET phone = '${phone}' WHERE senderID = '${sender}'`)
-                        .catch(err => {
-                            console.log('❌ ERRO: ', err);
-                        });
-                    mysql.execQuery(`UPDATE leads SET email = '${email}' WHERE senderID = '${sender}'`)
-                        .catch(err => {
-                            console.log('❌ ERRO: ', err);
-                        });
+
+                    await Leads.update({ phone: phone, email: email }, {
+                        where: { sender_id: sender },
+                        returning: true,
+                        plain: true
+                    }).catch((err) => {
+                        console.log('❌ [BOT CONSILIO] MYSQL: ', err);
+                    });
                 }
                 return setTimeout(function() {
                     send.sendTypingOn(sender);
@@ -375,8 +373,8 @@ const handleDFAObj = {
     
     },
     'input.schedule': async (sender, messages, contexts, parameters) => {
-        const userDB = await userModel.getUserDB(sender);
-        const event = await calendarModel.getEvent(sender);
+        const userDB = await Leads.findOne({ where: { sender_id: sender } });
+        const event = await Calendar.findOne({ where: { sender_id: sender, deletedAt: null, status: 'confirmed' } });
 
         send.sendTypingOn(sender);
 
@@ -472,8 +470,17 @@ const handleDFAObj = {
                         const event = res.data;
                         const eventID = await utils.getEventID(event);
 
-                        mysql.execQuery(`INSERT INTO calendar_events (eventID, senderID, status, link, summary, description, start, end) VALUES ('${eventID}', '${sender}', '${event.status}', '${event.htmlLink}', '${event.summary}', '${event.description}', '${moment(event.start.dateTime).format('YYYY-MM-DD HH:mm:ss')}', '${moment(event.end.dateTime).format('YYYY-MM-DD HH:mm:ss')}')`).catch(err => {
-                            console.log('❌ ERRO: ', err);
+                        Calendar.create({
+                            event_id: eventID,
+                            sender_id: sender,
+                            status: event.status,
+                            link: event.htmlLink,
+                            summary: event.summary,
+                            description: event.description,
+                            start: moment(event.start.dateTime).format('YYYY-MM-DD HH:mm:ss'),
+                            end: moment(event.end.dateTime).format('YYYY-MM-DD HH:mm:ss')
+                        }).catch(err => {
+                            console.log('❌ [BOT CONSILIO] MYSQL: ', err);
                         });
                     
                         send.sendTypingOn(sender);
@@ -513,7 +520,7 @@ const handleDFAObj = {
     },
     'input.schedule.verify': async (sender) => {
         send.sendTypingOn(sender);
-        const event = await calendarModel.getEvent(sender);
+        const event = await Calendar.findOne({ where: { sender_id: sender, deletedAt: null, status: 'confirmed' } });
         
         if (event && event.status == 'confirmed') {
                      
@@ -555,7 +562,7 @@ const handleDFAObj = {
     },
     'input.schedule.update': async (sender) => {
         send.sendTypingOn(sender);
-        const event = await calendarModel.getEvent(sender);
+        const event = await Calendar.findOne({ where: { sender_id: sender, deletedAt: null, status: 'confirmed' } });
 
         if (event && event.status == 'confirmed') {
             
@@ -597,8 +604,8 @@ const handleDFAObj = {
 
     },
     'input.schedule.update-yes': async (sender, messages, contexts, parameters) => {
-        const userDB = await userModel.getUserDB(sender);
-        const event = await calendarModel.getEvent(sender);
+        const userDB = await Leads.findOne({ where: { sender_id: sender } });
+        const event = await Calendar.findOne({ where: { sender_id: sender, deletedAt: null, status: 'confirmed' } });
         
         const [date, time] = [parameters.fields.date.stringValue, parameters.fields.time.stringValue];
 
@@ -668,11 +675,19 @@ const handleDFAObj = {
                 const dateTimeEnd = new Date(new Date(dateTimeStart).setHours(dateTimeStart.getHours() + 1));
                 const appointmentTimeString = moment(dateTimeStart).locale('pt-br').format('LLLL');
         
-                calendarAPI.updateCalendarEvent(dateTimeStart, dateTimeEnd, event.eventID).then((res) => {
+                calendarAPI.updateCalendarEvent(dateTimeStart, dateTimeEnd, event.event_id).then(async (res) => {
 
                     const event = res.data;
-                    mysql.execQuery(`UPDATE calendar_events SET start = '${moment(event.start.dateTime).format('YYYY-MM-DD HH:mm:ss')}', end = '${moment(event.end.dateTime).format('YYYY-MM-DD HH:mm:ss')}' WHERE senderID='${sender}'`).catch(err => {
-                        console.log('❌ ERRO: ', err);
+
+                    await Calendar.update({
+                        start: moment(event.start.dateTime).format('YYYY-MM-DD HH:mm:ss'),
+                        end: moment(event.end.dateTime).format('YYYY-MM-DD HH:mm:ss')
+                    }, {
+                        where: { sender_id: sender },
+                        returning: true,
+                        plain: true
+                    }).catch((err) => {
+                        console.log('❌ [BOT CONSILIO] MYSQL: ', err);
                     });
 
                     setTimeout(function () {
@@ -711,8 +726,7 @@ const handleDFAObj = {
     },
     'input.schedule.cancel': async (sender) => {
         send.sendTypingOn(sender);
-
-        const event = await calendarModel.getEvent(sender);
+        const event = await Calendar.findOne({ where: { sender_id: sender, deletedAt: null, status: 'confirmed' } });
 
         if (event && event.status == 'confirmed') {
             
@@ -764,12 +778,18 @@ const handleDFAObj = {
     },
     'input.schedule.cancel-yes': async (sender) => {
         send.sendTypingOn(sender);
-        const userDB = await userModel.getUserDB(sender);
-        const event = await calendarModel.getEvent(sender);
-        console.log(event);
-        await calendarAPI.deleteCalendarEvent(event.eventID).then(async () => {
+        const userDB = await Leads.findOne({ where: { sender_id: sender } });
+        const event = await Calendar.findOne({ where: { sender_id: sender, deletedAt: null, status: 'confirmed' } });
+
+        await calendarAPI.deleteCalendarEvent(event.event_id).then(async () => {
             send.sendTypingOn(sender);
-            await calendarModel.cancelEvent(sender);
+
+            await Calendar.update({ status: 'canceled' }, {
+                where: { event_id: event.event_id },
+                returning: true,
+                plain: true
+            });
+            await Calendar.destroy({ where: { event_id: event.event_id }});
 
             setTimeout(function() {
                 const text = `${userDB.first_name}, tudo pronto! \nCancelei sua avaliação.`;
@@ -806,7 +826,7 @@ const handleDFAObj = {
     },
     'input.institutional': async (sender) => {
         send.sendTypingOn(sender);
-        const event = await calendarModel.getEvent(sender);
+        const event = await Calendar.findOne({ where: { sender_id: sender, deletedAt: null, status: 'confirmed' } });
 
         setTimeout(function() {
             const text = 'Ficamos felizes de você querer nos conhecer melhor! 💗 \n\nVamos aqui conta um pouco sobre a nossa clínica. Nossa Clínica foi fundada nos mais sólidos princípios éticos e profissionais. Possuímos uma equipe de profissionais especializada e pronta para oferecer o que há de mais avançado em tratamentos odontológicos e estética facial.';
@@ -1161,7 +1181,7 @@ const handleDFAObj = {
     },
     'talk.human': async (sender) => {
         send.sendTypingOn(sender);
-        const userDB = await userModel.getUserDB(sender);
+        const userDB = await Leads.findOne({ where: { sender_id: sender } });
         facebookAPI.sendPassThread(sender);
         smsAPI.textMessageService.send(sender, 'Verifique sua caixa de entrada do Messenger, estão chamando por você.', ['5562983465454'], data => console.log('SMS API CALL: ', data));
         setTimeout(function() {
