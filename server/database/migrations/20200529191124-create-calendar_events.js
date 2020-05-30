@@ -9,14 +9,17 @@ export default {
                 autoIncrement: true,
                 allowNull: false
             },
-            eventID: {
+            event_id: {
                 type: Sequelize.STRING,
                 allowNull: false,
                 unique: true
             },
-            senderID: {
+            sender_id: {
                 type: Sequelize.STRING,
-                allowNull: false
+                allowNull: false,
+                references: { model: 'leads', key: 'sender_id' },
+                onUpdate: 'CASCADE',
+                onDelete: 'CASCADE'
             },
             status: {
                 type: Sequelize.STRING,
@@ -50,10 +53,14 @@ export default {
                 defaultValue: Sequelize.literal('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'),
                 allowNull: false
             },
+            deleted_at: {
+                type: Sequelize.DATE,
+                defaultValue: null
+            }
         });
     },
 
     down: (queryInterface) => {
-        return queryInterface.dropTable('leads');
+        return queryInterface.dropTable('calendar_events');
     }
 };

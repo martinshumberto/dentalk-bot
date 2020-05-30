@@ -5,6 +5,7 @@ const { resolve } = require('path')
 
 module.exports = {
   config: resolve('./server/config', 'database.js'),
+  'models-path': resolve('./server', 'models'),
   'migrations-path': resolve('./server/database', 'migrations'),
   'seeders-path': resolve('./server/database', 'seeders'),
 }

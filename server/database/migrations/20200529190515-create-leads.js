@@ -9,9 +9,10 @@ export default {
                 autoIncrement: true,
                 allowNull: false
             },
-            senderID: {
+            sender_id: {
                 type: Sequelize.STRING,
-                allowNull: false
+                allowNull: false,
+                unique: true
             },
             profile_pic: {
                 type: Sequelize.STRING(1234),
@@ -27,9 +28,6 @@ export default {
             },
             email: {
                 type: Sequelize.STRING,
-                validate: {
-                    isEmail: true,
-                },
             },
             gender: {
                 type: Sequelize.STRING,
@@ -47,6 +45,10 @@ export default {
                 defaultValue: Sequelize.literal('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'),
                 allowNull: false
             },
+            deleted_at: {
+                type: Sequelize.DATE,
+                defaultValue: null
+            }
         });
     },
 
