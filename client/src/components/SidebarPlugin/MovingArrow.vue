@@ -1,26 +1,27 @@
 <template>
-  <div class="moving-arrow" :style="arrowStyle">
-  </div>
+  <div 
+    :style="arrowStyle" 
+    class="moving-arrow"/>
 </template>
 <script>
 export default {
-  props: {
-    moveY: {
-      type: Number,
-      default: 0
-    }
-  },
-  computed: {
+    props: {
+        moveY: {
+            type: Number,
+            default: 0
+        }
+    },
+    computed: {
     /**
      * Styles to animate the arrow
      * @returns {{transform: string}}
      */
-    arrowStyle() {
-      return {
-        transform: `translate3d(-50px, ${this.moveY}px, 0px)`
-      };
+        arrowStyle() {
+            return {
+                transform: `translate3d(-50px, ${this.moveY}px, 0px)`
+            };
+        }
     }
-  }
 };
 </script>
 <style lang="scss">

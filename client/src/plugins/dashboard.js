@@ -1,5 +1,6 @@
 import Notify from 'vue-notifyjs';
 import SideBar from '@/components/SidebarPlugin';
+import PortalVue from 'portal-vue';
 import GlobalComponents from './globalComponents';
 import GlobalDirectives from './globalDirectives';
 import 'es6-promise/auto';
@@ -14,5 +15,6 @@ export default {
         Vue.use(GlobalDirectives);
         Vue.use(SideBar);
         Vue.use(Notify);
+        Vue.use(PortalVue);
     }
 };

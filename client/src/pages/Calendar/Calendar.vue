@@ -1,54 +1,71 @@
 <template>
-    <div class="row">
-      <div class="col-12">
-        <card :title="table.title" :subTitle="table.subTitle">
-          <kalendar :configuration="calendar_settings" :events.sync="events" />
-        </card>
-      </div>
-
+  <div class="row">
+    <div class="col-12">
+      <card 
+        :title="table.title" 
+        :sub-title="table.subTitle">
+        <calendar v-if="dataFetched" :calendar_settings="calendar_settings" :events="events" />
+      </card>
     </div>
+
+  </div>
 </template>
 <script>
+import axios from 'axios';
+import calendar from '../../components/Calendar/Calendar.vue';
 
 export default {
-  data: () => ({
-    table: {
-      title: "Agenda de avaliações",
-      subTitle: "Nessa agenda você encontrará todos os eventos agendandos pela atendente virtual",
-      data: []
+    components: {
+        calendar
     },
-    calendar_settings: {
-      style: 'material_design',
-      view_type: 'month',
-      cell_height: 20,
-      scrollToNow: true,
-      start_day: new Date().toISOString(),
-      read_only: false,
-      day_starts_at: 0,
-      day_ends_at: 24,
-      overlap: true,
-      hide_dates: ['2019-10-31'], // Spooky
-      hide_days: [6],
-      past_event_creation: true
+    data: () => ({
+        table: {
+            title: 'Agenda de avaliações',
+            subTitle: 'Nessa agenda você encontrará todos os eventos agendandos pela atendente virtual',
+            data: []
+        },
+        calendar_settings: {
+            style: 'material_design',
+            view_type: 'week',
+            cell_height: 10,
+            scrollToNow: true,
+            start_day: new Date().toISOString(),
+            read_only: true,
+            day_starts_at: 0,
+            day_ends_at: 24,
+            overlap: true,
+            hide_dates: ['2019-10-31'], // Spooky
+            hide_days: [6],
+            past_event_creation: true
+        },
+        events: [],
+        dataFetched: false
+    }),
+    beforeRouteEnter(to, from, next) {
+        axios.get('http://localhost:2000/api/events').then(res => {
+            next(vm => vm.setEvents(res.data));
+        });
     },
-    eventsTest: [],
-    events: [
-      {
-        from: '2020-03-18T18:00:00Z',
-        to: '2020-03-18T19:00:00Z',
-        data: 'Event 1',
-      },
-      {
-        from: '2020-03-18T19:00:00Z',
-        to: '2020-03-18T21:00:00Z',
-        data: 'Olive & Friends',
-      },
-    ],
-  }),
-  async created() {
-    const data = await this.$axios.get("/events")
-    this.eventsTest = data.data;
-  },
+    methods: {
+        setEvents(events){
+            let filtered = [];
+            const eventsAll = events;
+            eventsAll.forEach(item => {
+                filtered.push({ from: item.start, to: item.end, data: item.summary });
+            });
+            this.events = filtered;
+            this.dataFetched = true;
+        }
+    },
+    async created() {
+        const events = await this.$axios.get('/events');
+        let filtered = [];
+        const eventsAll = events.data;
+        eventsAll.forEach(item => {
+            filtered.push({ from: item.start, to: item.end, data: item.summary });
+        });
+        this.events = filtered;
+    },
 };
 </script>
 <style>
