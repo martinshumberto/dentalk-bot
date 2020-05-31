@@ -110,9 +110,9 @@ export default {
     },
     methods: {
         findActiveLink() {
-            this.links.forEach((link) => {
+            this.links.forEach((link, index) => {
                 if (link.isActive()) {
-                    this.activeLinkIndex = 'index';
+                    this.activeLinkIndex = index;
                 }
             });
         },
