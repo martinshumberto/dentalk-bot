@@ -19,14 +19,15 @@
     "vue": "^2.6.10",
     "vue-clickaway": "^2.1.0",
     "vue-notifyjs": "^0.3.0",
-    "vue-router": "^3.0.1",
+    "vue-router": "^3.3.2",
     "vuex": "^3.4.0"
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "^3.10.0",
     "@vue/cli-plugin-eslint": "^3.10.0",
-    "@vue/cli-service": "^3.10.0",
+    "@vue/cli-service": "^4.4.1",
     "@vue/eslint-config-prettier": "^5.0.0",
+    "babel-eslint": "^10.1.0",
     "node-sass": "^4.8.3",
     "sass-loader": "^6.0.7",
     "vue-template-compiler": "^2.6.10"
