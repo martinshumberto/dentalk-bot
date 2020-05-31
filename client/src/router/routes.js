@@ -7,7 +7,7 @@ const routes = [
             {
                 path: 'dashboard',
                 name: 'Dashboard',
-                component: () => import('@/pages/Dashboard.vue')
+                component: () => import('@/pages/Dashboard/Dashboard.vue')
             },
             {
                 path: 'leads',

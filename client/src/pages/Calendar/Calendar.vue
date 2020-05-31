@@ -4,17 +4,20 @@
       <card 
         :title="table.title" 
         :sub-title="table.subTitle">
-        <kalendar 
-          :configuration="calendar_settings" 
-          :events.sync="events" />
+        <calendar v-if="dataFetched" :calendar_settings="calendar_settings" :events="events" />
       </card>
     </div>
 
   </div>
 </template>
 <script>
+import axios from 'axios';
+import calendar from '../../components/Calendar/Calendar.vue';
 
 export default {
+    components: {
+        calendar
+    },
     data: () => ({
         table: {
             title: 'Agenda de avaliações',
@@ -23,11 +26,11 @@ export default {
         },
         calendar_settings: {
             style: 'material_design',
-            view_type: 'month',
-            cell_height: 20,
+            view_type: 'week',
+            cell_height: 10,
             scrollToNow: true,
             start_day: new Date().toISOString(),
-            read_only: false,
+            read_only: true,
             day_starts_at: 0,
             day_ends_at: 24,
             overlap: true,
@@ -35,23 +38,33 @@ export default {
             hide_days: [6],
             past_event_creation: true
         },
-        eventsTest: [],
-        events: [
-            {
-                from: '2020-03-18T18:00:00Z',
-                to: '2020-03-18T19:00:00Z',
-                data: 'Event 1',
-            },
-            {
-                from: '2020-03-18T19:00:00Z',
-                to: '2020-03-18T21:00:00Z',
-                data: 'Olive & Friends',
-            },
-        ],
+        events: [],
+        dataFetched: false
     }),
+    beforeRouteEnter(to, from, next) {
+        axios.get('http://localhost:2000/api/events').then(res => {
+            next(vm => vm.setEvents(res.data));
+        });
+    },
+    methods: {
+        setEvents(events){
+            let filtered = [];
+            const eventsAll = events;
+            eventsAll.forEach(item => {
+                filtered.push({ from: item.start, to: item.end, data: item.summary });
+            });
+            this.events = filtered;
+            this.dataFetched = true;
+        }
+    },
     async created() {
-        const data = await this.$axios.get('/events');
-        this.eventsTest = data.data;
+        const events = await this.$axios.get('/events');
+        let filtered = [];
+        const eventsAll = events.data;
+        eventsAll.forEach(item => {
+            filtered.push({ from: item.start, to: item.end, data: item.summary });
+        });
+        this.events = filtered;
     },
 };
 </script>

@@ -99,12 +99,14 @@ export default {
    */
     data() {
         return {
+            leads: [],
+            events: [],
             statsCards: [
                 {
                     type: 'warning',
                     icon: 'ti-user',
                     title: 'Leads',
-                    value: '105',
+                    value: 0,
                     footerText: 'Atualizar agora',
                     footerIcon: 'ti-reload'
                 },
@@ -112,7 +114,7 @@ export default {
                     type: 'success',
                     icon: 'ti-calendar',
                     title: 'Avaliações',
-                    value: '2',
+                    value: 0,
                     footerText: 'Atualizar agora',
                     footerIcon: 'ti-reload'
                 },
@@ -120,7 +122,7 @@ export default {
                     type: 'danger',
                     icon: 'ti-pulse',
                     title: 'Errors',
-                    value: '23',
+                    value: 0,
                     footerText: 'Atualizar agora',
                     footerIcon: 'ti-reload'
                 },
@@ -128,7 +130,7 @@ export default {
                     type: 'info',
                     icon: 'ti-mobile',
                     title: 'Contatos',
-                    value: '45',
+                    value: 0,
                     footerText: 'Atualizar agora',
                     footerIcon: 'ti-reload'
                 }
@@ -203,6 +205,36 @@ export default {
                 options: {}
             }
         };
+    },
+    async created() {
+        const leads = await this.$axios.get('/leads');
+        const events = await this.$axios.get('/events');
+        this.leads = leads.data;
+        this.statsCards[0].value = this.leadsCount;
+        this.events = events.data;
+        this.statsCards[1].value = this.eventsCount;
+        this.statsCards[3].value = this.filterContactsCount;
+    },
+    methods: {
+        isContact(lead) {
+            if (lead && lead.phone && lead.email)
+                return true;
+        }
+    },
+    computed: {
+        leadsCount () {
+            return this.leads.length;
+        },
+        eventsCount () {
+            return this.events.length;
+        },
+        filterContacts () {
+            var filtered = this.leads.filter(this.isContact);
+            return filtered;
+        },
+        filterContactsCount () {
+            return this.filterContacts.length;
+        },
     }
 };
 </script>

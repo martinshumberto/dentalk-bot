@@ -64,6 +64,7 @@
   </div>
 </template>
 <script>
+import moment from 'moment';
 
 export default {
     data() {
@@ -81,7 +82,7 @@ export default {
     },
     methods: {
         dateFormat(date) {
-            var dateParse = new Date(date);
+            var dateParse = moment(date).format('DD/MM/YYYY HH:mm');
             return dateParse;
         }
     }
