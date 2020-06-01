@@ -20,9 +20,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cors());
 app.use(
-    process.env.NODE_ENV === 'development' ?
-        express.static(path.join(__dirname, 'public')) :
-        express.static(path.join(__dirname, '../public'))
+    express.static(path.join(__dirname, '../public'))
 );
 
 config.checkEnv();
@@ -34,9 +32,7 @@ config.checkEnv();
 routes(app);
 
 app.get('/', (req, res) => {
-    process.env.NODE_ENV === 'development' ?
-        res.sendFile(path.join(__dirname, 'public/index.html')) :
-        res.sendFile(path.join(__dirname, '/../public/index.html'));
+    res.sendFile(path.join(__dirname, '/../public/index.html'));
 });
 
 app.listen(config.PORT, () => {

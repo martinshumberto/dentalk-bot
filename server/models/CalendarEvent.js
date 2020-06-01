@@ -2,7 +2,7 @@
 
 import { Model, DataTypes } from 'sequelize';
 
-class CalendarEvents extends Model {
+class CalendarEvent extends Model {
     static init(sequelize) {
         super.init({
             sender_id: DataTypes.STRING,
@@ -20,4 +20,4 @@ class CalendarEvents extends Model {
 }
 
 
-export default CalendarEvents;
+export default CalendarEvent;

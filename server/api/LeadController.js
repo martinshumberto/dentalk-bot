@@ -1,4 +1,4 @@
-import Leads from '../models/Leads';
+import Leads from '../models/Lead';
 
 export default {
     async index(req, res) {

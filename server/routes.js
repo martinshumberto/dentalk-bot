@@ -1,6 +1,6 @@
 'use strict';
 import webhook from './app/webhook';
-import LeadsController from './api/LeadsController';
+import LeadController from './api/LeadController';
 import CalendarController from './api/CalendarController';
 
 export default function (app) {
@@ -13,6 +13,6 @@ export default function (app) {
     /**
      * Routes API
     */
-    app.route('/api/leads').get(LeadsController.index);
+    app.route('/api/leads').get(LeadController.index);
     app.route('/api/events').get(CalendarController.index);
 }
