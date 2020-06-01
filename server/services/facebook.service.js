@@ -2,7 +2,7 @@
 import request from 'request';
 import config from '../config/variables';
 import utils from '../utils';
-import Leads from '../models/Leads';
+import Leads from '../models/Lead';
 
 /**
  * Send call to Facebook Graph API

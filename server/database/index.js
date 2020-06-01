@@ -1,6 +1,6 @@
 import Sequelize from 'sequelize';
-import Leads from '../models/Leads';
-import CalendarEvents from '../models/CalendarEvents';
+import Leads from '../models/Lead';
+import CalendarEvents from '../models/CalendarEvent';
 import databaseConfig from '../config/database';
 
 const models = [Leads, CalendarEvents];

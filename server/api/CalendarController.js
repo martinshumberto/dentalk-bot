@@ -1,4 +1,4 @@
-import Calendar from '../models/CalendarEvents';
+import Calendar from '../models/CalendarEvent';
 
 export default {
     async index(req, res) {

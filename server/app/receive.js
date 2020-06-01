@@ -9,8 +9,8 @@ import facebookAPI from '../services/facebook.service';
 import calendarAPI from '../services/calendar.service';
 import smsAPI from '../services/sms.service';
 
-import Calendar from '../models/CalendarEvents';
-import Leads from '../models/Leads';
+import Calendar from '../models/CalendarEvent';
+import Leads from '../models/Lead';
 
 /**
  * Process message type card

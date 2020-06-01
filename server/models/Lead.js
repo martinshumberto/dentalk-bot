@@ -1,8 +1,7 @@
 'use strict';
 
 import { Model, DataTypes } from 'sequelize';
-
-class Leads extends Model {
+class Lead extends Model {
     static init(sequelize) {
         super.init({
             sender_id: DataTypes.STRING,
@@ -19,4 +18,4 @@ class Leads extends Model {
     }
 }
 
-export default Leads;
+export default Lead;
