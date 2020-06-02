@@ -1,6 +1,11 @@
 'use strict';
+import path from 'path';
 
-require('dotenv').config();
+require('dotenv').config(
+    process.env.NODE_ENV === 'development' ?
+        { path: path.join(__dirname, '../../../.env') } :
+        { path: path.join(__dirname, '../.env') }
+);
 
 const ENV_VARS = [
     'PORT',

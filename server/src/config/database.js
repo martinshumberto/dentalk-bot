@@ -1,4 +1,9 @@
-require('dotenv').config();
+const path = require('path');
+require('dotenv').config(
+    process.env.NODE_ENV === 'development' ?
+        { path: path.join(__dirname, '../../.env') } :
+        { path: path.join(__dirname, '.env') }
+);
 
 module.exports = {
     dialect: 'mysql',
@@ -12,7 +17,7 @@ module.exports = {
         underscoredAll: true,
         paranoid: true
     },
-    logging: true,
+    logging: console.log,
     migrationStorageTableName: 'sequelize_meta',
-    seederStorageTableName: 'sequelize_data'
+    seederStorageTableName: 'sequelize_data'  
 };

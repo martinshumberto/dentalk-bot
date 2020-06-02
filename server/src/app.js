@@ -13,14 +13,22 @@ import config from './config/variables';
 import path from 'path';
 import './database';
 
-dotenv.config();
-
+dotenv.config(
+    process.env.NODE_ENV === 'development' ?
+        { path: path.join(__dirname, '../../.env') } :
+        { path: path.join(__dirname, '../.env') }
+);
+        
 const app = express();
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cors());
 app.use(
-    express.static(path.join(__dirname, '../public'))
+    express.static(
+        process.env.NODE_ENV === 'development' ?
+            path.join(__dirname, '../../public') :
+            path.join(__dirname, '../public')
+    )
 );
 
 config.checkEnv();
@@ -32,7 +40,9 @@ config.checkEnv();
 routes(app);
 
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, '/../public/index.html'));
+    process.env.NODE_ENV === 'development' ?
+        res.sendFile(path.join(__dirname, '../../public/index.html')) :
+        res.sendFile(path.join(__dirname, '../public/index.html'));
 });
 
 app.listen(config.PORT, () => {

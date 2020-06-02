@@ -4,7 +4,7 @@ import { Model, DataTypes } from 'sequelize';
 
 class CalendarEvent extends Model {
     static init(sequelize) {
-        super.init({
+        super.init( {
             sender_id: DataTypes.STRING,
             event_id: DataTypes.STRING,
             status: DataTypes.STRING,
@@ -13,11 +13,13 @@ class CalendarEvent extends Model {
             description: DataTypes.STRING,
             start: DataTypes.DATE,
             end: DataTypes.DATE
-        }, {
-            sequelize 
+        },
+        {
+            sequelize,
+            tableName: 'calendar_events',
+            freezeTableName: true
         });
     }
 }
-
 
 export default CalendarEvent;

@@ -1,0 +1,33 @@
+version: "3"
+
+services:
+  dentalk-mysql:
+    image: mysql
+    container_name: dentalk-mysql
+    restart: always
+    ports: 
+      - ${DB_PORT}:3306
+    environment: 
+      MYSQL_ROOT_HOST: ${DB_HOST}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_DATABASE: ${DB_DATABASE}
+
+  dentalk-node: 
+    image: node:alpine
+    container_name: dentalk-node
+    restart: always
+    depends_on: 
+      - dentalk-mysql
+    ports:
+      - ${PORT}:${PORT}
+    volumes:
+      - .:/usr/app
+    working_dir: /usr/app
+    command: npm run dev
+    logging:
+      driver: "json-file"
+      options: 
+        max-size: "10m"
+        max-file: "5"
