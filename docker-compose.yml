@@ -17,7 +17,10 @@ services:
       MYSQL_DATABASE: ${DB_DATABASE}
 
   app:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: dentalk-node
     container_name: dentalk-node
     restart: always
     env_file:

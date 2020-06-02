@@ -1,4 +1,6 @@
 ._*
+.gitignore
 node_modules
 public
 build
+.env
