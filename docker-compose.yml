@@ -9,7 +9,7 @@ services:
     ports: 
       - ${DB_PORT}:3306
     volumes:
-      - /Volumes/Dados/Development/Databases/dentalk-bot:/var/lib/mysql
+      - ./docker/db:/var/lib/mysql
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_USER: ${DB_USER}
@@ -23,8 +23,6 @@ services:
     env_file:
       - ./.env
     depends_on: 
-      - db
-    links:
       - db
     ports:
       - ${PORT}:${PORT}
