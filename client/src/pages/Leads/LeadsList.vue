@@ -64,6 +64,7 @@
   </div>
 </template>
 <script>
+import http from '../../http/requests/leads';
 import moment from 'moment';
 
 export default {
@@ -74,17 +75,27 @@ export default {
                 subTitle: 'Nessa listagem você encontrará todos os leads gerados.',
                 data: []
             },
+            dataFetched: false,
+            leads: []
         };
     },
-    async created() {
-        const data = await this.$axios.get('/leads');
-        this.table.data = data.data;
+    beforeRouteEnter(to, from, next) {
+        http.listLeads.then(res => {
+            next(vm => vm.setLeads(res.data));
+        });
     },
     methods: {
-        dateFormat(date) {
-            var dateParse = moment(date).format('DD/MM/YYYY HH:mm');
+        setLeads(events){
+            this.leads = events;
+            this.dataFetched = true;
+        },
+        dateFormat(test) {
+            var dateParse = moment(test).format('DD/MM/YYYY HH:mm');
             return dateParse;
         }
+    },
+    mounted() {
+        console.log('TESTE');
     }
 };
 </script>

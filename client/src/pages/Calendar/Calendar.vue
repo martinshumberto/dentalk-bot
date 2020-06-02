@@ -11,7 +11,7 @@
   </div>
 </template>
 <script>
-import axios from 'axios';
+import http from '../../http/requests/calendar';
 import calendar from '../../components/Calendar/Calendar.vue';
 
 export default {
@@ -42,29 +42,39 @@ export default {
         dataFetched: false
     }),
     beforeRouteEnter(to, from, next) {
-        axios.get('http://localhost:2000/api/events').then(res => {
-            next(vm => vm.setEvents(res.data));
-        });
-    },
-    methods: {
-        setEvents(events){
-            let filtered = [];
-            const eventsAll = events;
-            eventsAll.forEach(item => {
-                filtered.push({ from: item.start, to: item.end, data: item.summary });
-            });
-            this.events = filtered;
-            this.dataFetched = true;
+        try {
+            const calendar = http.listEvents;
+            // next(vm => {
+            //     vm.events = calendar.data;
+            //     vm.setEvents(calendar.data);
+            // });
+            next(calendar);
+        } catch (err) {
+            next(false);
         }
     },
-    async created() {
-        const events = await this.$axios.get('/events');
+    // watch: {
+    //     events:  'setEvents'
+    // },
+    // methods: {
+    //     setEvents(events){
+    //         let filtered = [];
+    //         const eventsAll = events;
+    //         eventsAll.forEach(item => {
+    //             filtered.push({ from: item.start, to: item.end, data: item.summary });
+    //         });
+    //         this.events = filtered;
+    //         this.dataFetched = true;
+    //     }
+    // },
+    async created(calendar) {
         let filtered = [];
-        const eventsAll = events.data;
+        const eventsAll = calendar;
         eventsAll.forEach(item => {
             filtered.push({ from: item.start, to: item.end, data: item.summary });
         });
         this.events = filtered;
+        this.dataFetched = true;
     },
 };
 </script>
