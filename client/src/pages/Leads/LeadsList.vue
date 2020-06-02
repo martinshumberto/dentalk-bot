@@ -4,7 +4,8 @@
       <card 
         :title="table.title" 
         :sub-title="table.subTitle">
-        <div 
+        <div
+          v-if="dataFetched"
           slot="raw-content" 
           class="table-responsive">
           <table class="table">
@@ -49,10 +50,10 @@
                   {{ item.email }}
                 </td>
                 <td>
-                  {{ dateFormat(item.created) }}
+                  {{ dateFormat(item.createdAt) }}
                 </td>
                 <td>
-                  {{ dateFormat(item.updated) }}
+                  {{ dateFormat(item.updatedAt) }}
                 </td>
               </tr>
             </tbody>
@@ -64,7 +65,7 @@
   </div>
 </template>
 <script>
-import http from '../../http/requests/leads';
+import axios from '../../axios';
 import moment from 'moment';
 
 export default {
@@ -75,27 +76,35 @@ export default {
                 subTitle: 'Nessa listagem você encontrará todos os leads gerados.',
                 data: []
             },
-            dataFetched: false,
-            leads: []
+            leads: [],
+            dataFetched: false
         };
     },
-    beforeRouteEnter(to, from, next) {
-        http.listLeads.then(res => {
-            next(vm => vm.setLeads(res.data));
+    async beforeRouteEnter(to, from, next) {
+        const fetchLeads = await axios.get('/leads');
+        next(vm => {
+            const leads = fetchLeads.data;
+            vm.setLeads(leads);
         });
     },
+    beforeRouteUpdate (to, from, next) {
+        const fetchLeads = axios.get('/leads');
+        this.setLeads(fetchLeads.data);
+        next();
+    },
+    watch: {
+        leads: 'setLeads'
+    },
     methods: {
-        setLeads(events){
-            this.leads = events;
+        setLeads(data){
+            this.leads = data;
+            this.table.data = data;
             this.dataFetched = true;
         },
-        dateFormat(test) {
-            var dateParse = moment(test).format('DD/MM/YYYY HH:mm');
+        dateFormat(date) {
+            var dateParse = moment(date).format('DD/MM/YYYY HH:mm');
             return dateParse;
         }
-    },
-    mounted() {
-        console.log('TESTE');
     }
 };
 </script>
