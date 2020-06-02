@@ -4,7 +4,8 @@
       <card 
         :title="table.title" 
         :sub-title="table.subTitle">
-        <div 
+        <div
+          v-if="dataFetched"
           slot="raw-content" 
           class="table-responsive">
           <table class="table">
@@ -49,10 +50,10 @@
                   {{ item.email }}
                 </td>
                 <td>
-                  {{ dateFormat(item.created) }}
+                  {{ dateFormat(item.createdAt) }}
                 </td>
                 <td>
-                  {{ dateFormat(item.updated) }}
+                  {{ dateFormat(item.updatedAt) }}
                 </td>
               </tr>
             </tbody>
@@ -64,6 +65,7 @@
   </div>
 </template>
 <script>
+import axios from '../../axios';
 import moment from 'moment';
 
 export default {
@@ -74,13 +76,31 @@ export default {
                 subTitle: 'Nessa listagem você encontrará todos os leads gerados.',
                 data: []
             },
+            leads: [],
+            dataFetched: false
         };
     },
-    async created() {
-        const data = await this.$axios.get('/leads');
-        this.table.data = data.data;
+    async beforeRouteEnter(to, from, next) {
+        const fetchLeads = await axios.get('/leads');
+        next(vm => {
+            const leads = fetchLeads.data;
+            vm.setLeads(leads);
+        });
+    },
+    beforeRouteUpdate (to, from, next) {
+        const fetchLeads = axios.get('/leads');
+        this.setLeads(fetchLeads.data);
+        next();
+    },
+    watch: {
+        leads: 'setLeads'
     },
     methods: {
+        setLeads(data){
+            this.leads = data;
+            this.table.data = data;
+            this.dataFetched = true;
+        },
         dateFormat(date) {
             var dateParse = moment(date).format('DD/MM/YYYY HH:mm');
             return dateParse;

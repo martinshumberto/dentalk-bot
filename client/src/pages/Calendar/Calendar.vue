@@ -11,7 +11,7 @@
   </div>
 </template>
 <script>
-import axios from 'axios';
+import axios from '../../axios';
 import calendar from '../../components/Calendar/Calendar.vue';
 
 export default {
@@ -41,9 +41,11 @@ export default {
         events: [],
         dataFetched: false
     }),
-    beforeRouteEnter(to, from, next) {
-        axios.get('http://localhost:2000/api/events').then(res => {
-            next(vm => vm.setEvents(res.data));
+    async beforeRouteEnter(to, from, next) {
+        const calendar = await axios.get('/events');
+        next(vm => {
+            const events = calendar.data;
+            vm.setEvents(events);
         });
     },
     methods: {
@@ -56,15 +58,6 @@ export default {
             this.events = filtered;
             this.dataFetched = true;
         }
-    },
-    async created() {
-        const events = await this.$axios.get('/events');
-        let filtered = [];
-        const eventsAll = events.data;
-        eventsAll.forEach(item => {
-            filtered.push({ from: item.start, to: item.end, data: item.summary });
-        });
-        this.events = filtered;
     },
 };
 </script>
