@@ -10,7 +10,7 @@ services:
       - app
     restart: always
     environment:
-      DOMAINS: 'dentalk.vendaporchat.com.br -> http://45.77.189.217:80'
+      DOMAINS: 'dentalk.vendaporchat.com.br -> http://45.77.189.217:2000'
       STAGE: 'production'
       FORCE_RENEW: 'false'
 
@@ -40,7 +40,7 @@ services:
     depends_on: 
       - db
     ports:
-      - 80:${PORT}
+      - ${PORT}:${PORT}
     volumes:
       - .:/usr/app
       - /usr/app/build
