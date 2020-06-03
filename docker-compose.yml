@@ -20,19 +20,21 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: dentalk-node
     container_name: dentalk-node
     restart: always
-    env_file:
-      - ./.env
+    user: "node"
+    env_file: .env
     depends_on: 
       - db
     ports:
       - ${PORT}:${PORT}
     volumes:
       - .:/usr/app
+      - /usr/app/build
+      - /usr/app/public
+      - /usr/app/node_modules
     working_dir: /usr/app
-    command: npm run start
+    command: node ./build/main.bundle.js
     logging:
       driver: "json-file"
       options: 
