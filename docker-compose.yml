@@ -27,7 +27,7 @@ services:
     depends_on: 
       - db
     ports:
-      - ${PORT}:${PORT}
+      - 80:${PORT}
     volumes:
       - .:/usr/app
       - /usr/app/build
