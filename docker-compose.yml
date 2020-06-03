@@ -1,6 +1,19 @@
 version: "3"
 
 services:
+  https-portal:
+    image: steveltn/https-portal:1
+    ports:
+      - '80:80'
+      - '443:443'
+    links:
+      - app
+    restart: always
+    environment:
+      DOMAINS: 'dentalk.vendaporchat.com.br -> http://45.77.189.217:80'
+      STAGE: 'production'
+      FORCE_RENEW: 'false'
+
   db:
     image: mysql:5.7
     container_name: dentalk-mysql
@@ -27,7 +40,7 @@ services:
     depends_on: 
       - db
     ports:
-      - ${PORT}:${PORT}
+      - 80:${PORT}
     volumes:
       - .:/usr/app
       - /usr/app/build
