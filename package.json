@@ -15,8 +15,8 @@
     "sequelize": "cd ./server && export NODE_ENV=development && sequelize $*",
     "build": "npm run clean && npm run build:client && npm run build:server",
     "watch": "webpack --progress --colors --watch",
-    "start": "NODE_ENV=production node build/main.bundle.js",
-    "debug": "node --debug ./server/build/app.js",
+    "start": "node ./build/main.bundle.js",
+    "debug": "node --debug build/app.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
