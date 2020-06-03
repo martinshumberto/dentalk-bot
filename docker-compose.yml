@@ -11,7 +11,7 @@ services:
     restart: always
     environment:
       DOMAINS: 'dentalk.vendaporchat.com.br -> http://149.28.98.19:2000'
-      STAGE: 'production'
+      # STAGE: 'production'
       FORCE_RENEW: 'false'
 
   db:
