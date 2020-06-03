@@ -10,7 +10,7 @@ services:
       - app
     restart: always
     environment:
-      DOMAINS: 'dentalk.vendaporchat.com.br -> http://149.28.98.19:2000'
+      DOMAINS: 'dentalk.consilio.com.br -> http://149.28.98.19:2000'
       # STAGE: 'production'
       FORCE_RENEW: 'false'
 
