@@ -10,7 +10,7 @@ services:
       - app
     restart: always
     environment:
-      DOMAINS: 'dentalk.vendaporchat.com.br -> http://45.77.189.217:2000'
+      DOMAINS: 'dentalk.vendaporchat.com.br -> http://149.28.98.19:2000'
       STAGE: 'production'
       FORCE_RENEW: 'false'
 
@@ -21,8 +21,6 @@ services:
     command: --default-authentication-plugin=mysql_native_password
     ports: 
       - ${DB_PORT}:3306
-    volumes:
-      - ./docker/db:/var/lib/mysql
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_USER: ${DB_USER}
