@@ -1,4 +1,4 @@
-version: "3"
+version: "3.3"
 
 services:
   https-portal:
@@ -9,15 +9,19 @@ services:
     links:
       - app
     restart: always
+    volumes:
+      - ./docker/certs:/var/lib/https-portal
     environment:
-      DOMAINS: 'dentalk.consilio.com.br -> http://149.28.98.19:2000'
-      # STAGE: 'production'
+      DOMAINS: '${DOMAIN} -> http://app:${PORT}/'
+      # STAGE: production
       FORCE_RENEW: 'false'
 
   db:
     image: mysql:5.7
     container_name: dentalk-mysql
     restart: always
+    volumes:
+      - ./docker/db:/var/lib/mysql
     command: --default-authentication-plugin=mysql_native_password
     ports: 
       - ${DB_PORT}:3306
