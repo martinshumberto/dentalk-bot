@@ -48,6 +48,8 @@ services:
       - /usr/app/build
       - /usr/app/public
       - /usr/app/node_modules
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
     working_dir: /usr/app
     command: node ./build/main.bundle.js
     logging:
