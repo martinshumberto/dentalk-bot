@@ -11,11 +11,9 @@ services:
     restart: always
     volumes:
       - ./docker/certs:/var/lib/https-portal
-      - './docker/nginx-conf/${DOMAIN}.conf.erb:/var/lib/nginx-conf/${DOMAIN}.conf.erb:ro'
-      - './docker/nginx-conf/${DOMAIN}.ssl.conf.erb:/var/lib/nginx-conf/${DOMAIN}.ssl.conf.erb:ro'
     environment:
       DOMAINS: '${DOMAIN} -> http://app:${PORT}/'
-      # STAGE: production
+      STAGE: production
       FORCE_RENEW: 'false'
 
   db:
