@@ -25,6 +25,13 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cors());
 
+config.checkEnv();
+
+/*
+ ** Routes configuration
+ */
+
+routes(app);
 
 const staticFileMiddleware = express.static(
     process.env.NODE_ENV === 'development' ?
@@ -37,20 +44,6 @@ app.use(history({
     verbose: true
 }));
 app.use(staticFileMiddleware);
-
-config.checkEnv();
-
-/*
- ** Routes configuration
- */
-
-routes(app);
-
-app.get('/', (req, res) => {
-    process.env.NODE_ENV === 'development' ?
-        res.sendFile(path.join(__dirname, '../../public/index.html')) :
-        res.sendFile(path.join(__dirname, '../public/index.html'));
-});
 
 app.listen(config.PORT, () => {
     console.log('⚡️ [BOT CONSILIO] Express server is listening.');
