@@ -7,6 +7,7 @@
 import dotenv from 'dotenv';
 import express from 'express';
 import bodyParser from 'body-parser';
+import history from 'connect-history-api-fallback';
 import cors from 'cors';
 import routes from './routes';
 import config from './config/variables';
@@ -23,13 +24,19 @@ const app = express();
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cors());
-app.use(
-    express.static(
-        process.env.NODE_ENV === 'development' ?
-            path.join(__dirname, '../../public') :
-            path.join(__dirname, '../public')
-    )
+
+
+const staticFileMiddleware = express.static(
+    process.env.NODE_ENV === 'development' ?
+        path.join(__dirname, '../../public') :
+        path.join(__dirname, '../public')
 );
+app.use(staticFileMiddleware);
+app.use(history({
+    disableDotRule: true,
+    verbose: true
+}));
+app.use(staticFileMiddleware);
 
 config.checkEnv();
 
