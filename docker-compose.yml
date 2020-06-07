@@ -37,16 +37,13 @@ services:
     restart: always
     user: "node"
     env_file: .env
+    environment: 
+      NODE_ENV: production
     depends_on: 
       - db
     ports:
       - ${PORT}:${PORT}
-    volumes:
-      - /usr/app/build
-      - /usr/app/public
-      - /usr/app/node_modules
     working_dir: /usr/app
-    command: node ./build/main.bundle.js
     logging:
       driver: "json-file"
       options: 

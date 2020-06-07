@@ -1,7 +1,10 @@
 ._*
-.gitignore
-node_modules
-public
-build
-.env
-.git
+**/.gitignore
+**/.dockerignore
+**/node_modules
+**/public
+**/build
+**/.git
+**/.env
+LICENSE
+README.md
