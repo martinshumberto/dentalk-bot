@@ -5,7 +5,7 @@ import { google } from 'googleapis';
 
 const serviceAccountAuth = new google.auth.JWT({
     email: config.GOOGLE_CLIENT_EMAIL,
-    key: config.GOOGLE_PRIVATE_KEY,
+    key: JSON.parse(config.GOOGLE_PRIVATE_KEY),
     scopes: 'https://www.googleapis.com/auth/calendar'
 });
 
