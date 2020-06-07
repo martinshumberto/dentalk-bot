@@ -25,8 +25,16 @@ COPY --from=build /usr/app/node_modules ./node_modules
 
 RUN chmod -R 777 /usr/app/build
 
-RUN ls -lh /usr/app
-RUN ls -lh /usr/app/build
+ARG TZ='America/Sao_Paulo'
+
+ENV DEFAULT_TZ ${TZ}
+
+RUN apk upgrade --update \
+  && apk add -U tzdata \
+  && cp /usr/share/zoneinfo/${DEFAULT_TZ} /etc/localtime \
+  && apk del tzdata \
+  && rm -rf \
+  /var/cache/apk/*
 
 USER node
 
