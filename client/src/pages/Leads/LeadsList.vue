@@ -13,7 +13,7 @@
               <slot name="columns">
                 <th>ID</th>
                 <th>Foto</th>
-                <th>Perfil</th>
+                <th>Messenger</th>
                 <th>Primeiro nome</th>
                 <th>Último nome</th>
                 <th>Telefone</th>
@@ -34,7 +34,7 @@
                 </td>
                 <td>
                   <a 
-                    :href="`https://facebook.com/dentalkoficial/inbox/${item.senderID}`" 
+                    :href="`https://facebook.com/dentalkoficial/inbox/${item.sender_id}`" 
                     target="_blank">Ver</a>
                 </td>
                 <td>
