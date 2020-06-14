@@ -6,7 +6,11 @@
 </template>
 
 <script>
-export default {};
+export default {
+    created () {
+        document.title = 'Clínica Dentalk | Exemplo do atendente virtual odontológico';
+    }
+};
 </script>
 
 <style lang="scss">
