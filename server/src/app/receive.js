@@ -380,7 +380,7 @@ const handleDFAObj = {
                 calendarAPI.slotsFromEvents(dateTimeStart).then(async (resTime) => {
                     let replies = [];
                     resTime.forEach(function(time) {
-                        const hour = moment(time).format('HH:mm');
+                        const hour = moment(time).format('HH:mm A');
                         replies.push({
                             'content_type': 'text',
                             'title': hour,
