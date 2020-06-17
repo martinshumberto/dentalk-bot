@@ -59,7 +59,7 @@ const handleCardMessages = (messages, sender) => {
  * @param {Number} sender
  */
 const handleMessages = (messages, sender) => {
-    let timeoutInterval = 1100;
+    let timeoutInterval = 10;
     let previousType;
     let cardTypes = [];
     let timeout = 0;
@@ -98,13 +98,13 @@ const handleMessages = (messages, sender) => {
 
 const handleMsgObj = {
     'text': (message, sender) => {
-        message.text.text.forEach(text => {
+        message.text.text.forEach(async (text) => {
             if (text !== '') {
-                send.sendTextMessage(sender, text);
+                await send.sendTextMessage(sender, text);
             }
         });
     },
-    'quickReplies': (message, sender) => {
+    'quickReplies': async (message, sender) => {
         let replies = [];
         message.quickReplies.quickReplies.forEach(text => {
             let reply = {
@@ -114,12 +114,12 @@ const handleMsgObj = {
             };
             replies.push(reply);
         });
-        return send.sendQuickReply(sender, message.quickReplies.title, replies);
+        await send.sendQuickReply(sender, message.quickReplies.title, replies);
     },
-    'image': (message, sender) => {
-        send.sendImageMessage(sender, message.image.imageUri);
+    'image': async (message, sender) => {
+        await send.sendImageMessage(sender, message.image.imageUri);
     },
-    'payload': (message, sender) => {
+    'payload': async (message, sender) => {
         const payload = struct.decode(message.payload);
         let verifyPerson = null;
     
@@ -134,7 +134,7 @@ const handleMsgObj = {
             message: payload.facebook,
             verifyPerson
         };
-        facebookAPI.sendCall(messageData, 0);
+        await facebookAPI.sendCall(messageData, 0);
     }
 };
 
@@ -164,8 +164,8 @@ const handleQuickReply = (senderID, quickReply, messageId) => {
  * @param {*} messageAttachments
  * @param {Number} senderID
  */
-const handleMessageAttachments = (messageAttachments, senderID) => {
-    send.sendTextMessage(senderID, 'Recebi o anexo. Muito obrigado.');
+const handleMessageAttachments = async (messageAttachments, senderID) => {
+    await send.sendTextMessage(senderID, 'Recebi o anexo. Muito obrigado.');
 };
 
 /**
@@ -181,7 +181,7 @@ const handleDialogFlowResponse = (sender, response) => {
     let contexts = response.outputContexts;
     let parameters = response.parameters;
 
-    var delay = 1000;
+    var delay = 0;
 
     if (utils.isDefined(action)) {
         send.sendTypingOn(sender);
@@ -219,117 +219,42 @@ const handleDialogFlowResponse = (sender, response) => {
  */
 const handleDFAObj = {
     'input.welcome': async (sender, messages, contexts, parameters) => {
+        await send.sendTypingOn(sender);
         const user = utils.usersMap.get(sender);
         utils.setSessionandUser(sender);
-
         const userDB = await Leads.findOne({ where: { sender_id: sender } });
 
-        const welcome = () => {
-            return new Promise(function(resolve) {
-                send.sendTypingOn(sender);
-                setTimeout(function() {
-                    resolve(send.sendTextMessage(sender, `Oi ${user.first_name}! 👋`));
-                }, 1000);
-            });
-        };
-        const about = () => {
-            return new Promise(function(resolve) {
-                send.sendTypingOn(sender);
-                setTimeout(function() {
-                    resolve(send.sendTextMessage(sender, 'Sou a Lary, a atendente virtual 🤖 da Clínica Dentalk!'));
-                }, 1000);
-            });
-        };
-        const copy = () => {
-            return new Promise(function(resolve) {
-                send.sendTypingOn(sender);
-                setTimeout(function() {
-                    resolve(send.sendTextMessage(sender, 'Aqui acreditamos que sorrisos renovados transformam vidas!'));
-                }, 1000);
-            });
-        };
-        const getPhone = () => {
-            return new Promise(function(resolve) {
-                send.sendTypingOn(sender);
-                setTimeout(function() {
-                    let replies = [
-                        {
-                            'content_type': 'user_phone_number',
-                            'title': 'user_phone_number',
-                            'payload': 'user_phone_number'
-                        }
-                    ];
-                    const text = 'Me confirme seu número de telefone:';
-                    resolve(send.sendQuickReply(sender, text, replies));
-                }, 1000);
-            });
-        };
-        const getEmail = () => {
-            return new Promise(function(resolve) {
-                send.sendTypingOn(sender);
-                setTimeout(function() {
-                    let replies = [
-                        {
-                            'content_type': 'user_email',
-                            'title': 'user_email',
-                            'payload': 'user_email'
-                        }
-                    ];
-                    const text = 'Ok! Antes de começarmos me confirme também seu e-mail:';
-                    resolve(send.sendQuickReply(sender, text, replies));
-                }, 1000);
-            });
-        };
-        const onboarding = (first) => {
-            return new Promise(function(resolve) {
-                send.sendTypingOn(sender);
-                setTimeout(function() {
-                    let replies = [
-                        {
-                            'content_type': 'text',
-                            'title': 'Agendar avaliação',
-                            'payload': 'Agendar avaliação'
-                        },
-                        {
-                            'content_type': 'text',
-                            'title': 'Verificar avaliação',
-                            'payload': 'Verificar avaliação'
-                        },
-                        {
-                            'content_type': 'text',
-                            'title': 'Cancelar avaliação',
-                            'payload': 'Cancelar avaliação'
-                        },
-                        {
-                            'content_type': 'text',
-                            'title': 'Conhecer a clínica',
-                            'payload': 'Conhecer a clínica'
-                        },
-                        {
-                            'content_type': 'text',
-                            'title': 'Tratamentos',
-                            'payload': 'Tratamentos'
-                        }
-                    ];
-                    if(first) {
-                        const text = 'Vamos começar o seu atendimento, selecione um dos botões abaixo. 👇';
-                        resolve(send.sendQuickReply(sender, text, replies));
-                    } else {
-                        const text = 'Que bom te ver por aqui novamente. No que posso te ajudar hoje?';
-                        resolve(send.sendQuickReply(sender, text, replies));
-                    }
-                }, 1000);
-            });
-        };
-
         if (userDB && userDB.phone && userDB.email) {
-
-            welcome().then(() => {
-                return setTimeout(function() {
-                    send.sendTypingOn(sender);
-                    onboarding();
-                }, 1000);
-            });
+            await send.sendTextMessage(sender, `Oi ${user.first_name}! 👋`);
+            let replies = [
+                {
+                    'content_type': 'text',
+                    'title': 'Agendar avaliação',
+                    'payload': 'Agendar avaliação'
+                },
+                {
+                    'content_type': 'text',
+                    'title': 'Verificar avaliação',
+                    'payload': 'Verificar avaliação'
+                },
+                {
+                    'content_type': 'text',
+                    'title': 'Cancelar avaliação',
+                    'payload': 'Cancelar avaliação'
+                },
+                {
+                    'content_type': 'text',
+                    'title': 'Conhecer a clínica',
+                    'payload': 'Conhecer a clínica'
+                },
+                {
+                    'content_type': 'text',
+                    'title': 'Tratamentos',
+                    'payload': 'Tratamentos'
+                }
+            ];
+            const text = 'Que bom te ver por aqui novamente. No que posso te ajudar hoje?';
+            await send.sendQuickReply(sender, text, replies);
 
         } else {
 
@@ -340,22 +265,48 @@ const handleDFAObj = {
 
             if (missingSlots.length === 1){
                 if (!phone && email) {
-                    return getPhone();
+
+                    let replies = [
+                        {
+                            'content_type': 'user_phone_number',
+                            'title': 'user_phone_number',
+                            'payload': 'user_phone_number'
+                        }
+                    ];
+                    const text = 'Me confirme seu número de telefone:';
+                    await send.sendQuickReply(sender, text, replies);
+
                 } else if (!email && phone) {
-                    return getEmail();
+
+                    let replies = [
+                        {
+                            'content_type': 'user_email',
+                            'title': 'user_email',
+                            'payload': 'user_email'
+                        }
+                    ];
+                    const text = 'Ok! Antes de começarmos me confirme também seu e-mail:';
+                    await send.sendQuickReply(sender, text, replies);
+
                 }
             } 
-            else if (missingSlots.length === 2){
-                welcome().then(() => {
-                    return about();
-                }).then(() => {
-                    return copy();
-                }).then(() => {
-                    return getPhone();
-                });
+            else if (missingSlots.length === 2) {
+                
+                await send.sendTextMessage(sender, `Oi ${user.first_name}! 👋`);
+                await send.sendTextMessage(sender, 'Sou a Lary, a atendente virtual 🤖 da Clínica Dentalk!');
+                await send.sendTextMessage(sender, 'Aqui acreditamos que sorrisos renovados transformam vidas!');
+                let replies = [
+                    {
+                        'content_type': 'user_phone_number',
+                        'title': 'user_phone_number',
+                        'payload': 'user_phone_number'
+                    }
+                ];
+                const text = 'Me confirme seu número de telefone:';
+                await send.sendQuickReply(sender, text, replies);
+
             } else {
                 if (phone && email) {
-
                     await Leads.update({ phone: phone, email: email }, {
                         where: { sender_id: sender },
                         returning: true,
@@ -364,41 +315,61 @@ const handleDFAObj = {
                         console.log('❌ [BOT CONSILIO] MYSQL: ', err);
                     });
                 }
-                return setTimeout(function() {
-                    send.sendTypingOn(sender);
-                    onboarding(true);
-                }, 1000);
+                let replies = [
+                    {
+                        'content_type': 'text',
+                        'title': 'Agendar avaliação',
+                        'payload': 'Agendar avaliação'
+                    },
+                    {
+                        'content_type': 'text',
+                        'title': 'Verificar avaliação',
+                        'payload': 'Verificar avaliação'
+                    },
+                    {
+                        'content_type': 'text',
+                        'title': 'Cancelar avaliação',
+                        'payload': 'Cancelar avaliação'
+                    },
+                    {
+                        'content_type': 'text',
+                        'title': 'Conhecer a clínica',
+                        'payload': 'Conhecer a clínica'
+                    },
+                    {
+                        'content_type': 'text',
+                        'title': 'Tratamentos',
+                        'payload': 'Tratamentos'
+                    }
+                ];
+                const text = 'Vamos começar o seu atendimento, selecione um dos botões abaixo. 👇';
+                send.sendQuickReply(sender, text, replies);
             }
         }
     
     },
     'input.schedule': async (sender, messages, contexts, parameters) => {
+        await send.sendTypingOn(sender);
         const userDB = await Leads.findOne({ where: { sender_id: sender } });
         const event = await Calendar.findOne({ where: { sender_id: sender, deletedAt: null, status: 'confirmed' } });
 
-        send.sendTypingOn(sender);
-
         if (event && event.status == 'confirmed') {
+            const text1 = `Você já tem uma avaliação marcada 📆 ${moment(event.start).locale('pt-br').format('LLLL')}.`;
+            await send.sendTextMessage(sender, text1);
 
-            const text = `Você já tem uma avaliação marcada 📆 ${moment(event.start).locale('pt-br').format('LLLL')}.`;
-            send.sendTextMessage(sender, text);
-
-            setTimeout(function() {
-                let text = 'Deseja reagendar? 👇';
-                let replies = [
-                    {
-                        'content_type': 'text',
-                        'title': 'Reagendar agora',
-                        'payload': 'Reagendar agora'
-                    }
-                ];
-                send.sendQuickReply(sender, text, replies);
-            }, 1000);
+            let text2 = 'Deseja reagendar? 👇';
+            let replies = [
+                {
+                    'content_type': 'text',
+                    'title': 'Reagendar agora',
+                    'payload': 'Reagendar agora'
+                }
+            ];
+            await send.sendQuickReply(sender, text2, replies);
 
         } else {
 
             const [date, time] = [parameters.fields.date.stringValue, parameters.fields.time.stringValue];
-
             let missingSlots = [];
             if (!date) { missingSlots.push('data'); }
             if (!time) { missingSlots.push('horário'); }
@@ -406,10 +377,10 @@ const handleDFAObj = {
             if (missingSlots.length === 1){
                 const dateTimeStart = new Date(Date.parse(date.split('T')[0] + 'T' + date.split('T')[1].split('-')[0] + '-03:00'));
 
-                calendarAPI.slotsFromEvents(dateTimeStart).then((resTime) => {
+                calendarAPI.slotsFromEvents(dateTimeStart).then(async (resTime) => {
                     let replies = [];
                     resTime.forEach(function(time) {
-                        const hour = moment(time).format('HH:mm');
+                        const hour = moment(time).format('HH:mm A');
                         replies.push({
                             'content_type': 'text',
                             'title': hour,
@@ -417,7 +388,7 @@ const handleDFAObj = {
                         });
                     });
                     let text = 'Agora, selecione o melhor horário dentre os disponíveis para a sua avaliação:';
-                    send.sendQuickReply(sender, text, replies);
+                    await send.sendQuickReply(sender, text, replies);
                 });
 
             } 
@@ -426,7 +397,7 @@ const handleDFAObj = {
                 const dateTimeStart = new Date(Date.parse(today.split('T')[0] + 'T' + today.split('T')[1].split('-')[0] + '-03:00'));
                 const dateTimeEnd = new Date(moment(dateTimeStart).add(7, 'days'));
 
-                calendarAPI.daysFromSlots(dateTimeStart, dateTimeEnd).then((resTime) => {
+                calendarAPI.daysFromSlots(dateTimeStart, dateTimeEnd).then(async (resTime) => {
                     let days = [];
                     let daysRefine = [];
                     resTime.forEach(function(time) {
@@ -453,11 +424,10 @@ const handleDFAObj = {
                         });
                     });
                     let text = 'Que dia fica bom para você fazer sua avaliação?';
-                    send.sendQuickReply(sender, text, replies);
+                    await send.sendQuickReply(sender, text, replies);
                 });
             } else {
                 handleMessages(messages, sender);
-                send.sendTypingOn(sender);
                 if (parameters.fields.date.stringValue && parameters.fields.time.stringValue) {
                     const date = parameters.fields.date.stringValue;
                     const time = parameters.fields.time.stringValue;
@@ -483,85 +453,78 @@ const handleDFAObj = {
                             console.log('❌ [BOT CONSILIO] MYSQL: ', err);
                         });
                     
-                        send.sendTypingOn(sender);
-                        setTimeout(function() {
-                            const text = `Tudo certo ${userDB.first_name}! Agendei aqui para você. 📝 \nTe aguardamos aqui 📆 ${appointmentTimeString}.`;
-                            send.sendTextMessage(sender, text);
-                        }, 1000);
-                        setTimeout(function() {
-                            let buttons = [
-                                {
-                                    type:'web_url',
-                                    url:'http://bit.ly/humbertoconsilio',
-                                    title:'Chamar no WhatsApp'
-                                },
-                                {
-                                    type:'phone_number',
-                                    title:'Ligar agora',
-                                    payload:'+5562983465454',
-                                },
-                                {
-                                    type:'postback',
-                                    title:'Falar com humano',
-                                    payload:'Falar com humano'
-                                }
-                            ];
-        
-                            send.sendButtonMessage(sender, 'Caso tenha ficado alguma dúvida, fique à vontade de conversar com a gente!', buttons);
-                        }, 4000);
-                    }).catch((erro) => {
+                        const text = `Tudo certo ${userDB.first_name}! Agendei aqui para você. 📝 \nTe aguardamos aqui 📆 ${appointmentTimeString}.`;
+                        await send.sendTextMessage(sender, text);
+                    
+                        let buttons = [
+                            {
+                                type:'web_url',
+                                url:'http://bit.ly/humbertoconsilio',
+                                title:'Chamar no WhatsApp'
+                            },
+                            {
+                                type:'phone_number',
+                                title:'Ligar agora',
+                                payload:'+5562983465454',
+                            },
+                            {
+                                type:'postback',
+                                title:'Falar com humano',
+                                payload:'Falar com humano'
+                            }
+                        ];
+                        await send.sendButtonMessage(sender, 'Caso tenha ficado alguma dúvida, fique à vontade de conversar com a gente!', buttons);
+
+                    }).catch(async (erro) => {
                         console.log('ERRO', erro);
                         const text = `Opps o horário ${appointmentTimeString}, não está disponível. Vamos tentar outro?`;
-                        send.sendTextMessage(sender, text);
+                        await send.sendTextMessage(sender, text);
                     }); 
                 }
             }
         }
     },
     'input.schedule.verify': async (sender) => {
-        send.sendTypingOn(sender);
+        await send.sendTypingOn(sender);
         const event = await Calendar.findOne({ where: { sender_id: sender, deletedAt: null, status: 'confirmed' } });
         
         if (event && event.status == 'confirmed') {
                      
             const text = `Encontrei! Sou rápida, não é mesmo? 😏 \nExiste um agendamento para 📆 ${moment(event.start).locale('pt-br').format('LLLL')}.`;
-            send.sendTextMessage(sender, text);
+            await send.sendTextMessage(sender, text);
     
-            setTimeout(function() {
-                let text = 'Deseja reagendar ou cancelar? 👇';
-                let replies = [
-                    {
-                        'content_type': 'text',
-                        'title': 'Reagendar agora',
-                        'payload': 'Reagendar agora'
-                    },
-                    {
-                        'content_type': 'text',
-                        'title': 'Cancelar agora',
-                        'payload': 'Cancelar agora'
-                    }
-                ];
-                send.sendQuickReply(sender, text, replies);
-            }, 1000);
+            let text2 = 'Deseja reagendar ou cancelar? 👇';
+            let replies = [
+                {
+                    'content_type': 'text',
+                    'title': 'Reagendar agora',
+                    'payload': 'Reagendar agora'
+                },
+                {
+                    'content_type': 'text',
+                    'title': 'Cancelar agora',
+                    'payload': 'Cancelar agora'
+                }
+            ];
+            await send.sendQuickReply(sender, text2, replies);
+  
         } else {
             const text = 'Infelizmente não encontrei o seu agendamento. 😰';
-            send.sendTextMessage(sender, text);
+            await send.sendTextMessage(sender, text);
 
-            setTimeout(function() {
-                let text = 'Mas, calma. Você pode agendar a sua avaliação agora! 😄 \n\nSelecione para agendar. 👇';
-                let replies = [
-                    {
-                        'content_type': 'text',
-                        'title': 'Agendar agora',
-                        'payload': 'Agendar agora'
-                    }
-                ];
-                send.sendQuickReply(sender, text, replies);
-            }, 1000);   
+            let text2 = 'Mas, calma. Você pode agendar a sua avaliação agora! 😄 \n\nSelecione para agendar. 👇';
+            let replies = [
+                {
+                    'content_type': 'text',
+                    'title': 'Agendar agora',
+                    'payload': 'Agendar agora'
+                }
+            ];
+            await send.sendQuickReply(sender, text2, replies);
         }
     },
     'input.schedule.update': async (sender) => {
-        send.sendTypingOn(sender);
+        await send.sendTypingOn(sender);
         const event = await Calendar.findOne({ where: { sender_id: sender, deletedAt: null, status: 'confirmed' } });
 
         if (event && event.status == 'confirmed') {
@@ -569,41 +532,39 @@ const handleDFAObj = {
             const text = `Ótimo! Estava marcado dia 📆 ${moment(event.start).locale('pt-br').format('LLLL')}.`;
             send.sendTextMessage(sender, text);
 
-            setTimeout(function() {
-                let text = 'Posso continuar o reagedamento? 👇';
-                let replies = [
-                    {
-                        'content_type': 'text',
-                        'title': 'Sim',
-                        'payload': 'Sim'
-                    },
-                    {
-                        'content_type': 'text',
-                        'title': 'Não',
-                        'payload': 'Não'
-                    }
-                ];
-                send.sendQuickReply(sender, text, replies);
-            }, 1000);
+            let text2 = 'Posso continuar o reagedamento? 👇';
+            let replies = [
+                {
+                    'content_type': 'text',
+                    'title': 'Sim',
+                    'payload': 'Sim'
+                },
+                {
+                    'content_type': 'text',
+                    'title': 'Não',
+                    'payload': 'Não'
+                }
+            ];
+            await send.sendQuickReply(sender, text2, replies);
         } else {
             const text = 'Infelizmente não encontrei o seu agendamento. 😰';
             send.sendTextMessage(sender, text);
 
-            setTimeout(function() {
-                let text = 'Mas, calma. Você pode agendar a sua avaliação agora! 😄 \n\nSelecione para agendar. 👇';
-                let replies = [
-                    {
-                        'content_type': 'text',
-                        'title': 'Agendar agora',
-                        'payload': 'Agendar agora'
-                    }
-                ];
-                send.sendQuickReply(sender, text, replies);
-            }, 1000);
+            let text2 = 'Mas, calma. Você pode agendar a sua avaliação agora! 😄 \n\nSelecione para agendar. 👇';
+            let replies = [
+                {
+                    'content_type': 'text',
+                    'title': 'Agendar agora',
+                    'payload': 'Agendar agora'
+                }
+            ];
+            await send.sendQuickReply(sender, text2, replies);
+
         }
 
     },
     'input.schedule.update-yes': async (sender, messages, contexts, parameters) => {
+        await send.sendTypingOn(sender);
         const userDB = await Leads.findOne({ where: { sender_id: sender } });
         const event = await Calendar.findOne({ where: { sender_id: sender, deletedAt: null, status: 'confirmed' } });
         
@@ -616,7 +577,7 @@ const handleDFAObj = {
         if (missingSlots.length === 1) {
             const dateTimeStart = new Date(Date.parse(date.split('T')[0] + 'T' + date.split('T')[1].split('-')[0] + '-03:00'));
 
-            calendarAPI.slotsFromEvents(dateTimeStart).then((resTime) => {
+            calendarAPI.slotsFromEvents(dateTimeStart).then(async (resTime) => {
                 let replies = [];
                 resTime.forEach(function (time) {
                     const hour = moment(time).format('HH:mm');
@@ -627,7 +588,7 @@ const handleDFAObj = {
                     });
                 });
                 let text = 'Ótimo dia, qual o melhor horário para esse novo agendamento?';
-                send.sendQuickReply(sender, text, replies);
+                await send.sendQuickReply(sender, text, replies);
             });
 
         }
@@ -636,7 +597,7 @@ const handleDFAObj = {
             const dateTimeStart = new Date(Date.parse(today.split('T')[0] + 'T' + today.split('T')[1].split('-')[0] + '-03:00'));
             const dateTimeEnd = new Date(moment(dateTimeStart).add(7, 'days'));
 
-            calendarAPI.daysFromSlots(dateTimeStart, dateTimeEnd).then((resTime) => {
+            calendarAPI.daysFromSlots(dateTimeStart, dateTimeEnd).then(async (resTime) => {
                 let days = [];
                 let daysRefine = [];
                 resTime.forEach(function (time) {
@@ -663,10 +624,9 @@ const handleDFAObj = {
                     });
                 });
                 let text = 'Entendi. 😊 \nPara qual dia gostaria de alterar sua consulta?';
-                send.sendQuickReply(sender, text, replies);
+                await send.sendQuickReply(sender, text, replies);
             });
         } else {
-            send.sendTypingOn(sender);
             handleMessages(messages, sender);
             if (parameters.fields.date.stringValue && parameters.fields.time.stringValue) {
                 const date = parameters.fields.date.stringValue;
@@ -690,99 +650,93 @@ const handleDFAObj = {
                         console.log('❌ [BOT CONSILIO] MYSQL: ', err);
                     });
 
-                    setTimeout(function () {
-                        const text = `${userDB.first_name}, reagendei aqui! ✌ \nTe aguardamos aqui 📆 ${appointmentTimeString}.`;
-                        send.sendTextMessage(sender, text);
-                    }, 1000);
-                    setTimeout(function () {
-                        let buttons = [
-                            {
-                                type: 'web_url',
-                                url: 'http://bit.ly/humbertoconsilio',
-                                title: 'Chamar no WhatsApp'
-                            },
-                            {
-                                type: 'phone_number',
-                                title: 'Ligar agora',
-                                payload: '+5562983465454',
-                            },
-                            {
-                                type: 'postback',
-                                title: 'Falar com humano',
-                                payload: 'Falar com humano'
-                            }
-                        ];
+                    const text = `${userDB.first_name}, reagendei aqui! ✌ \nTe aguardamos aqui 📆 ${appointmentTimeString}.`;
+                    await send.sendTextMessage(sender, text);
+                    
+                    let buttons = [
+                        {
+                            type: 'web_url',
+                            url: 'http://bit.ly/humbertoconsilio',
+                            title: 'Chamar no WhatsApp'
+                        },
+                        {
+                            type: 'phone_number',
+                            title: 'Ligar agora',
+                            payload: '+5562983465454',
+                        },
+                        {
+                            type: 'postback',
+                            title: 'Falar com humano',
+                            payload: 'Falar com humano'
+                        }
+                    ];
     
-                        send.sendButtonMessage(sender, 'Caso tenha ficado alguma dúvida, fique à vontade de conversar com a gente!', buttons);
-                    }, 4000);
+                    await send.sendButtonMessage(sender, 'Caso tenha ficado alguma dúvida, fique à vontade de conversar com a gente!', buttons);
                
-                }).catch((erro) => {
+                }).catch(async (erro) => {
                     console.log('ERRO', erro);
                     const text = `Opps o horário ${appointmentTimeString}, não está disponível. Vamos tentar outro?`;
-                    send.sendTextMessage(sender, text);
+                    await send.sendTextMessage(sender, text);
                 });
             }
         }
     },
     'input.schedule.cancel': async (sender) => {
-        send.sendTypingOn(sender);
+        await send.sendTypingOn(sender);
         const event = await Calendar.findOne({ where: { sender_id: sender, deletedAt: null, status: 'confirmed' } });
 
         if (event && event.status == 'confirmed') {
             
             const text = 'Que pena! 😢 \nA avaliação é o primeiro passo para a transformação do seu sorriso ou dar aquele up! na autoestima.';
-            send.sendTextMessage(sender, text);
+            await send.sendTextMessage(sender, text);
 
-            setTimeout(function() {
-                let text = 'Deseja mesmo cancelar a sua avaliação? Lembre-se que você pode reagendar. 👇';
-                let replies = [
-                    {
-                        'content_type': 'text',
-                        'title': 'Sim',
-                        'payload': 'Sim'
-                    },
-                    {
-                        'content_type': 'text',
-                        'title': 'Reagendar avaliação',
-                        'payload': 'Reagendar avaliação'
-                    }
-                ];
-                send.sendQuickReply(sender, text, replies);
-            }, 1000);
+            let text2 = 'Deseja mesmo cancelar a sua avaliação? Lembre-se que você pode reagendar. 👇';
+            let replies = [
+                {
+                    'content_type': 'text',
+                    'title': 'Sim',
+                    'payload': 'Sim'
+                },
+                {
+                    'content_type': 'text',
+                    'title': 'Reagendar avaliação',
+                    'payload': 'Reagendar avaliação'
+                }
+            ];
+            await send.sendQuickReply(sender, text2, replies);
+            
         } else {
             const text = 'Não encontrei o seu agendamento 🤔';
-            send.sendTextMessage(sender, text);
+            await send.sendTextMessage(sender, text);
             
-            setTimeout(function() {
-                let text = 'Caso você queira ver sobre outro assunto. \n\nÉ só selecionar o botão 👇';
-                let replies = [
-                    {
-                        'content_type': 'text',
-                        'title': 'Agendar avaliação',
-                        'payload': 'Agendar avaliação'
-                    },
-                    {
-                        'content_type': 'text',
-                        'title': 'Tratamentos',
-                        'payload': 'Tratamentos'
-                    },
-                    {
-                        'content_type': 'text',
-                        'title': 'Horário de funcionamento',
-                        'payload': 'Horário de funcionamento'
-                    }
-                ];
-                send.sendQuickReply(sender, text, replies);
-            }, 2000);
+            let text2 = 'Caso você queira ver sobre outro assunto. \n\nÉ só selecionar o botão 👇';
+            let replies = [
+                {
+                    'content_type': 'text',
+                    'title': 'Agendar avaliação',
+                    'payload': 'Agendar avaliação'
+                },
+                {
+                    'content_type': 'text',
+                    'title': 'Tratamentos',
+                    'payload': 'Tratamentos'
+                },
+                {
+                    'content_type': 'text',
+                    'title': 'Horário de funcionamento',
+                    'payload': 'Horário de funcionamento'
+                }
+            ];
+            await send.sendQuickReply(sender, text2, replies);
+            
         }
     },
     'input.schedule.cancel-yes': async (sender) => {
-        send.sendTypingOn(sender);
+        await send.sendTypingOn(sender);
         const userDB = await Leads.findOne({ where: { sender_id: sender } });
         const event = await Calendar.findOne({ where: { sender_id: sender, deletedAt: null, status: 'confirmed' } });
 
         await calendarAPI.deleteCalendarEvent(event.event_id).then(async () => {
-            send.sendTypingOn(sender);
 
             await Calendar.update({ status: 'canceled' }, {
                 where: { event_id: event.event_id },
@@ -791,421 +745,391 @@ const handleDFAObj = {
             });
             await Calendar.destroy({ where: { event_id: event.event_id }});
 
-            setTimeout(function() {
-                const text = `${userDB.first_name}, tudo pronto! \nCancelei sua avaliação.`;
-                send.sendTextMessage(sender, text);
-            }, 1000);
+            const text = `${userDB.first_name}, tudo pronto! \nCancelei sua avaliação.`;
+            await send.sendTextMessage(sender, text);
             
-            setTimeout(function() {
-                let text = 'Caso você queira ver sobre outro assunto. \n\nÉ só selecionar o botão 👇';
-                let replies = [
-                    {
-                        'content_type': 'text',
-                        'title': 'Agendar avaliação',
-                        'payload': 'Agendar avaliação'
-                    },
-                    {
-                        'content_type': 'text',
-                        'title': 'Tratamentos',
-                        'payload': 'Tratamentos'
-                    },
-                    {
-                        'content_type': 'text',
-                        'title': 'Horário de funcionamento',
-                        'payload': 'Horário de funcionamento'
-                    }
-                ];
-                send.sendQuickReply(sender, text, replies);
-            }, 2000);
+            const text2 = 'Caso você queira ver sobre outro assunto. \n\nÉ só selecionar o botão 👇';
+            const replies = [
+                {
+                    'content_type': 'text',
+                    'title': 'Agendar avaliação',
+                    'payload': 'Agendar avaliação'
+                },
+                {
+                    'content_type': 'text',
+                    'title': 'Tratamentos',
+                    'payload': 'Tratamentos'
+                },
+                {
+                    'content_type': 'text',
+                    'title': 'Horário de funcionamento',
+                    'payload': 'Horário de funcionamento'
+                }
+            ];
+            await send.sendQuickReply(sender, text2, replies);
            
-        }).catch((erro) => {
+        }).catch(async (erro) => {
             console.log('ERRO', erro);
             const text = 'Ops, não consegui acessar a agenda agora, tente novamente mais tarde. 😓 ';
-            send.sendTextMessage(sender, text);
+            await send.sendTextMessage(sender, text);
         }); 
     },
     'input.institutional': async (sender) => {
-        send.sendTypingOn(sender);
+        await send.sendTypingOn(sender);
         const event = await Calendar.findOne({ where: { sender_id: sender, deletedAt: null, status: 'confirmed' } });
 
-        setTimeout(function() {
-            const text = 'Ficamos felizes de você querer nos conhecer melhor! 💗 \n\nVamos aqui conta um pouco sobre a nossa clínica. Nossa Clínica foi fundada nos mais sólidos princípios éticos e profissionais. Possuímos uma equipe de profissionais especializada e pronta para oferecer o que há de mais avançado em tratamentos odontológicos e estética facial.';
-            send.sendTextMessage(sender, text);
-        }, 1000);
+        const text = 'Ficamos felizes de você querer nos conhecer melhor! 💗 \n\nVamos aqui conta um pouco sobre a nossa clínica. Nossa Clínica foi fundada nos mais sólidos princípios éticos e profissionais. Possuímos uma equipe de profissionais especializada e pronta para oferecer o que há de mais avançado em tratamentos odontológicos e estética facial.';
+        await send.sendTextMessage(sender, text);
 
         if (event && event.status == 'confirmed') {
-            setTimeout(function() {
-                const text = 'É meio complicado demonstrarmos tudo o que somos capazes por aqui.\nMas, a sua consulta de avaliação já está chegando e logo você nos conhecerá melhor. 😍 \n\nCaso tenha ficado alguma dúvida, fique à vontade de conversar com a gente no WhatsApp!';
-                send.sendTextMessage(sender, text);
-            }, 2000);
-            setTimeout(function() {
-                let buttons = [
-                    {
-                        type:'web_url',
-                        url:'http://bit.ly/humbertoconsilio',
-                        title:'Chamar no WhatsApp'
-                    }
-                ];
 
-                send.sendButtonMessage(sender, 'Caso tenha ficado alguma dúvida, fique à vontade de conversar com a gente!', buttons);
-            }, 2000);
+            const text = 'É meio complicado demonstrarmos tudo o que somos capazes por aqui.\nMas, a sua consulta de avaliação já está chegando e logo você nos conhecerá melhor. 😍 \n\nCaso tenha ficado alguma dúvida, fique à vontade de conversar com a gente no WhatsApp!';
+            await send.sendTextMessage(sender, text);
+
+            let buttons = [
+                {
+                    type:'web_url',
+                    url:'http://bit.ly/humbertoconsilio',
+                    title:'Chamar no WhatsApp'
+                }
+            ];
+
+            await send.sendButtonMessage(sender, 'Caso tenha ficado alguma dúvida, fique à vontade de conversar com a gente!', buttons);
+            
         } else {
-            send.sendTypingOn(sender);
-            setTimeout(function() {
-                const text = 'É complicado demonstrarmos tudo o que somos capazes por aqui.';
-                send.sendTextMessage(sender, text);
-            }, 2000);
-            setTimeout(function() {
-                let text = 'Agende uma avaliação, será um prazer te receber 😍';
-                let replies = [
-                    {
-                        'content_type': 'text',
-                        'title': 'Agendar agora',
-                        'payload': 'Agendar agora'
-                    }
-                ];
-                send.sendQuickReply(sender, text, replies);
-            }, 2000);
+            const text = 'É complicado demonstrarmos tudo o que somos capazes por aqui.';
+            await send.sendTextMessage(sender, text);
+            
+            const text2 = 'Agende uma avaliação, será um prazer te receber 😍';
+            const replies = [
+                {
+                    'content_type': 'text',
+                    'title': 'Agendar agora',
+                    'payload': 'Agendar agora'
+                }
+            ];
+            await send.sendQuickReply(sender, text2, replies);
+            
         }
     },
-    'input.treatments': (sender) => {
-        send.sendTypingOn(sender);
-        setTimeout(function() {
-            const text = 'Entendi! Veja alguns tratamentos/procedimentos que realizamos aqui na clínica e saiba mais sobre cada um deles. É só escolher 😉';
-            send.sendTextMessage(sender, text);
-        }, 1000);
-        setTimeout(function() {
-            let elements = [
-                {
-                    title:'Invisalign',
-                    image_url:'https://afetoodontologia.com.br/wp-content/uploads/2019/10/shutterstock-1006765645.png',
-                    subtitle:'O Invisalign são “alinhadores invisíveis”. Alternativa para quem não quer usar os aparelhos tradicionais',
-                    default_action: {
-                        type: 'web_url',
-                        url: 'https://consilio.com.br/',
-                    },
-                    buttons: [{
-                        type: 'postback',
-                        title: 'Agendar consulta',
-                        payload: 'SCHEDULE_APPOINTMENT',
-                    }]      
+    'input.treatments': async (sender) => {
+        await send.sendTypingOn(sender);
+        const text = 'Entendi! Veja alguns tratamentos/procedimentos que realizamos aqui na clínica e saiba mais sobre cada um deles. É só escolher 😉';
+        await send.sendTextMessage(sender, text);
+       
+        let elements = [
+            {
+                title:'Invisalign',
+                image_url:'https://afetoodontologia.com.br/wp-content/uploads/2019/10/shutterstock-1006765645.png',
+                subtitle:'O Invisalign são “alinhadores invisíveis”. Alternativa para quem não quer usar os aparelhos tradicionais',
+                default_action: {
+                    type: 'web_url',
+                    url: 'https://consilio.com.br/',
                 },
-                {
-                    title:'Harmonização facial',
-                    image_url:'https://afetoodontologia.com.br/wp-content/uploads/2019/10/harmoniza%C3%A7%C3%A3o-site-768x536.png',
-                    subtitle:'Novo conceito da estética facial e rejunevescimento que integra a naturalidade à beleza da face',
-                    default_action: {
-                        type: 'web_url',
-                        url: 'https://consilio.com.br/',
-                    },
-                    buttons: [{
-                        type: 'postback',
-                        title: 'Agendar consulta',
-                        payload: 'SCHEDULE_APPOINTMENT',
-                    }]      
-                },
-                {
-                    title:'Ortodontia',
-                    image_url:'https://afetoodontologia.com.br/wp-content/uploads/2019/09/ortodontia.jpg',
-                    subtitle:'Dentes alinhados não ajudam apenas o seu sorriso, mas também a saúde do seu organismo',
-                    default_action: {
-                        type: 'web_url',
-                        url: 'https://consilio.com.br/',
-                    },
-                    buttons: [{
-                        type: 'postback',
-                        title: 'Agendar consulta',
-                        payload: 'SCHEDULE_APPOINTMENT',
-                    }]      
-                },
-                {
-                    title:'Implantes Dentários',
-                    image_url:'https://afetoodontologia.com.br/wp-content/uploads/2020/04/implantes-dentarios-afeto.jpg',
-                    subtitle:'O tratamento por meio do Implante trata-se de um pino inserido no maxilar ou mandíbula através de uma cirurgia. ',
-                    default_action: {
-                        type: 'web_url',
-                        url: 'https://consilio.com.br/',
-                    },
-                    buttons: [{
-                        type: 'postback',
-                        title: 'Agendar consulta',
-                        payload: 'SCHEDULE_APPOINTMENT',
-                    }]      
-                },
-                {
-                    title:'Lentes de Contato',
-                    image_url:'https://afetoodontologia.com.br/wp-content/uploads/2020/03/image.png',
-                    subtitle:'As Lentes de Contato Dentais são trabalhos estéticos que encobrem a frente do dente.',
-                    default_action: {
-                        type: 'web_url',
-                        url: 'https://consilio.com.br/',
-                    },
-                    buttons: [{
-                        type: 'postback',
-                        title: 'Agendar consulta',
-                        payload: 'SCHEDULE_APPOINTMENT',
-                    }]      
-                }
-            ];
-            send.sendGenericMessage(sender, elements);
-        }, 2000);
-    },
-    'input.values': (sender) => {
-        send.sendTypingOn(sender);
-        setTimeout(function() {
-            const text = 'Para te passarmos um valor, precisamos primeiramente fazer uma avaliação sem compromisso. O valor costuma ser diferente de paciente para paciente.';
-            send.sendTextMessage(sender, text);
-        }, 1000);
-        setTimeout(function() {
-            let text = 'Mas, fique tranquilo! Você pode agendar a sua avaliação agora. Clique abaixo. 😬';
-            let replies = [
-                {
-                    'content_type': 'text',
-                    'title': 'Agendar agora',
-                    'payload': 'Agendar agora'
-                }
-            ];
-            send.sendQuickReply(sender, text, replies);
-        }, 2000);
-    },
-    'input.contact': (sender) => {
-        send.sendTypingOn(sender);
-        setTimeout(function() {
-            const text = 'Para falar conosco durante o horário comercial. \n\n(62) 3940-4050 ☎\n(62) 99521-3531 📲';
-            send.sendTextMessage(sender, text);
-        }, 1000);
-        setTimeout(function() {
-            let buttons = [
-                {
-                    type:'web_url',
-                    url:'http://bit.ly/humbertoconsilio',
-                    title:'Chamar no WhatsApp'
-                },
-                {
-                    type:'phone_number',
-                    title:'Ligar agora',
-                    payload:'+5562983465454',
-                }
-            ];
-            send.sendButtonMessage(sender, 'Ou basta escolher abaixo que te transfiro.', buttons);
-        }, 1000);
-    },
-    'input.how_it_works': (sender) => {
-        send.sendTypingOn(sender);
-        setTimeout(function() {
-            const text = `Aqui na ${config.NAME_COMPANY} acreditamos que para entender todas as suas necessidades e oferecer o tratamento mais adequando, é necessário te conhecermos primeiramente! \nPor isso, você pode agendar uma avaliação sem compromisso. Após essa avaliação, falaremos sobre valores e as melhores formas de conduzir o seu tratamento.`;
-            send.sendTextMessage(sender, text);
-        }, 1000);
-        setTimeout(function() {
-            let buttons = [
-                {
-                    type:'postback',
-                    payload:'SCHEDULE_APPOINTMENT',
-                    title:'Ok, agendar agora'
-                },
-                {
-                    type:'web_url',
-                    url:'http://bit.ly/humbertoconsilio',
-                    title:'Ok, chamar no WhatsApp'
-                }
-            ];
-            send.sendButtonMessage(sender, 'O que acha de continuarmos?', buttons);
-        }, 1000);
-    },
-    'input.payment_methods': (sender) => {
-        send.sendTypingOn(sender);
-        setTimeout(function() {
-            const text = 'Aceitamos todas as bandeiras de cartões de crédito, dinheiro, cheque e boleto. Venha fazer uma avaliação e descobrir as possibilidades que podemos oferecer para você! 😉';
-            send.sendTextMessage(sender, text);
-        }, 1000);
-    },
-    'input.address': (sender) => {
-        send.sendTypingOn(sender);
-        setTimeout(function() {
-            const text = 'Funcionamos de Segunda a Sexta das 08h as 18h.\nNa rua Av. do Comércio, Nº 25 - Sala 502 - Vila Maria José.';
-            send.sendTextMessage(sender, text);
-        }, 1000);
-        setTimeout(function() {
-            let buttons = [
-                {
-                    type:'web_url',
-                    url:'http://bit.ly/humbertoconsilio',
-                    title:'Chamar no WhatsApp'
-                },
-                {
-                    type:'web_url',
-                    url:'https://goo.gl/maps/yuL1CR8LwRFA3nWJ8',
-                    title:'Localização (Mapa)'
-                },
-                {
-                    type:'phone_number',
-                    title:'Ligar agora',
-                    payload:'+5562983465454',
-                }
-            ];
-            send.sendButtonMessage(sender, 'Tenho mais algumas opções para você:', buttons);
-        }, 2000);
-    },
-    'input.about': (sender) => {
-        send.sendTypingOn(sender);
-        setTimeout(function() {
-            const text = 'Desculpe por não me apresentar! 😬';
-            send.sendTextMessage(sender, text);
-        }, 1000);
-        setTimeout(function() {
-            const text = `Eu sou a Lary, atendente virtual da ${config.NAME_COMPANY}. 🤖`;
-            send.sendTextMessage(sender, text);
-        }, 1000);
-    },
-    'input.corona': (sender) => {
-        send.sendTypingOn(sender);
-        setTimeout(function() {
-            const text = 'Espero que esteja tudo bem!';
-            send.sendTextMessage(sender, text);
-        }, 1000);
-        setTimeout(function() {
-            let buttons = [
-                {
+                buttons: [{
                     type: 'postback',
-                    title: 'Cancelar consulta',
-                    payload: 'CANCEL_APPOINTMENT',
+                    title: 'Agendar consulta',
+                    payload: 'SCHEDULE_APPOINTMENT',
+                }]      
+            },
+            {
+                title:'Harmonização facial',
+                image_url:'https://afetoodontologia.com.br/wp-content/uploads/2019/10/harmoniza%C3%A7%C3%A3o-site-768x536.png',
+                subtitle:'Novo conceito da estética facial e rejunevescimento que integra a naturalidade à beleza da face',
+                default_action: {
+                    type: 'web_url',
+                    url: 'https://consilio.com.br/',
                 },
-                {
-                    type:'web_url',
-                    url:'https://coronavirus.saude.gov.br/',
-                    title:'Informações COVID-19'
+                buttons: [{
+                    type: 'postback',
+                    title: 'Agendar consulta',
+                    payload: 'SCHEDULE_APPOINTMENT',
+                }]      
+            },
+            {
+                title:'Ortodontia',
+                image_url:'https://afetoodontologia.com.br/wp-content/uploads/2019/09/ortodontia.jpg',
+                subtitle:'Dentes alinhados não ajudam apenas o seu sorriso, mas também a saúde do seu organismo',
+                default_action: {
+                    type: 'web_url',
+                    url: 'https://consilio.com.br/',
                 },
-            ];
-            send.sendButtonMessage(sender, 'Tenho algumas sugestões sobre esse assunto.', buttons);
-        }, 2000);
+                buttons: [{
+                    type: 'postback',
+                    title: 'Agendar consulta',
+                    payload: 'SCHEDULE_APPOINTMENT',
+                }]      
+            },
+            {
+                title:'Implantes Dentários',
+                image_url:'https://afetoodontologia.com.br/wp-content/uploads/2020/04/implantes-dentarios-afeto.jpg',
+                subtitle:'O tratamento por meio do Implante trata-se de um pino inserido no maxilar ou mandíbula através de uma cirurgia. ',
+                default_action: {
+                    type: 'web_url',
+                    url: 'https://consilio.com.br/',
+                },
+                buttons: [{
+                    type: 'postback',
+                    title: 'Agendar consulta',
+                    payload: 'SCHEDULE_APPOINTMENT',
+                }]      
+            },
+            {
+                title:'Lentes de Contato',
+                image_url:'https://afetoodontologia.com.br/wp-content/uploads/2020/03/image.png',
+                subtitle:'As Lentes de Contato Dentais são trabalhos estéticos que encobrem a frente do dente.',
+                default_action: {
+                    type: 'web_url',
+                    url: 'https://consilio.com.br/',
+                },
+                buttons: [{
+                    type: 'postback',
+                    title: 'Agendar consulta',
+                    payload: 'SCHEDULE_APPOINTMENT',
+                }]      
+            }
+        ];
+        await send.sendGenericMessage(sender, elements);
+        
     },
-    'input.plans': (sender) => {
-        send.sendTypingOn(sender);
-        setTimeout(function() {
-            const text = 'Infelizmente não possuímos convênios, mas acreditamos que podemos apresentar as melhores soluções para você!';
-            send.sendTextMessage(sender, text);
-        }, 1000);
-        setTimeout(function() {
-            let text = 'Agende sua avaliação sem compromisso! 😉';
-            let replies = [
-                {
-                    'content_type': 'text',
-                    'title': 'Agendar agora',
-                    'payload': 'Agendar agora'
-                }
-            ];
-            send.sendQuickReply(sender, text, replies);
-        }, 2000);
+    'input.values': async (sender) => {
+        await send.sendTypingOn(sender);
+        
+        const text = 'Para te passarmos um valor, precisamos primeiramente fazer uma avaliação sem compromisso. O valor costuma ser diferente de paciente para paciente.';
+        send.sendTextMessage(sender, text);
+        
+        const text2 = 'Mas, fique tranquilo! Você pode agendar a sua avaliação agora. Clique abaixo. 😬';
+        const replies = [
+            {
+                'content_type': 'text',
+                'title': 'Agendar agora',
+                'payload': 'Agendar agora'
+            }
+        ];
+        await send.sendQuickReply(sender, text2, replies);
+
     },
-    'input.recommendations': (sender) => {
-        send.sendTypingOn(sender);
-        setTimeout(function() {
-            const text = 'Nossa! De imediato já desejo uma boa recuperação 🙏.\nVeja as recomendações que temos disponíveis aqui.\nClick no card da recomendação que você está precisando 👇';
-            send.sendTextMessage(sender, text);
-        }, 1000);
-        setTimeout(function() {
-            let elements = [
-                {
-                    title:'Lentes de contato',
-                    image_url:'https://afetoodontologia.com.br/wp-content/uploads/elementor/thumbs/afeto-odontologia-lente-de-contato-opux763t0jnd31c6mnev3e4vwbgjayqwwwunthhte6.jpg',
-                    subtitle:'As lentes de contato dental se tornaram as queridinhas das famosas e famosos que transformam os seus sorrisos através deste método.',
-                    default_action: {
-                        type: 'web_url',
-                        url: 'https://consilio.com.br/',
-                    },
-                    buttons: [{
-                        type: 'postback',
-                        title: 'Agendar consulta',
-                        payload: 'SCHEDULE_APPOINTMENT',
-                    }]      
+    'input.contact': async (sender) => {
+        await send.sendTypingOn(sender);
+
+        const text = 'Para falar conosco durante o horário comercial. \n\n(62) 3940-4050 ☎\n(62) 99521-3531 📲';
+        send.sendTextMessage(sender, text);
+
+        let buttons = [
+            {
+                type:'web_url',
+                url:'http://bit.ly/humbertoconsilio',
+                title:'Chamar no WhatsApp'
+            },
+            {
+                type:'phone_number',
+                title:'Ligar agora',
+                payload:'+5562983465454',
+            }
+        ];
+        await send.sendButtonMessage(sender, 'Ou basta escolher abaixo que te transfiro.', buttons);
+
+    },
+    'input.how_it_works': async (sender) => {
+        await send.sendTypingOn(sender);
+        const text = `Aqui na ${config.NAME_COMPANY} acreditamos que para entender todas as suas necessidades e oferecer o tratamento mais adequando, é necessário te conhecermos primeiramente! \nPor isso, você pode agendar uma avaliação sem compromisso. Após essa avaliação, falaremos sobre valores e as melhores formas de conduzir o seu tratamento.`;
+        await send.sendTextMessage(sender, text);
+
+        let buttons = [
+            {
+                type:'postback',
+                payload:'SCHEDULE_APPOINTMENT',
+                title:'Ok, agendar agora'
+            },
+            {
+                type:'web_url',
+                url:'http://bit.ly/humbertoconsilio',
+                title:'Ok, chamar no WhatsApp'
+            }
+        ];
+        await send.sendButtonMessage(sender, 'O que acha de continuarmos?', buttons);
+    },
+    'input.payment_methods': async (sender) => {
+        await send.sendTypingOn(sender);
+
+        const text = 'Aceitamos todas as bandeiras de cartões de crédito, dinheiro, cheque e boleto. Venha fazer uma avaliação e descobrir as possibilidades que podemos oferecer para você! 😉';
+        await send.sendTextMessage(sender, text);
+
+    },
+    'input.address': async (sender) => {
+        await send.sendTypingOn(sender);
+        const text = 'Funcionamos de Segunda a Sexta das 08h as 18h.\nNa rua Av. do Comércio, Nº 25 - Sala 502 - Vila Maria José.';
+        await send.sendTextMessage(sender, text);
+
+        let buttons = [
+            {
+                type:'web_url',
+                url:'http://bit.ly/humbertoconsilio',
+                title:'Chamar no WhatsApp'
+            },
+            {
+                type:'web_url',
+                url:'https://goo.gl/maps/yuL1CR8LwRFA3nWJ8',
+                title:'Localização (Mapa)'
+            },
+            {
+                type:'phone_number',
+                title:'Ligar agora',
+                payload:'+5562983465454',
+            }
+        ];
+        await send.sendButtonMessage(sender, 'Tenho mais algumas opções para você:', buttons);
+
+    },
+    'input.about': async (sender) => {
+        await send.sendTypingOn(sender);
+
+        const text = 'Desculpe por não me apresentar! 😬';
+        await send.sendTextMessage(sender, text);
+
+        const text2 = `Eu sou a Lary, atendente virtual da ${config.NAME_COMPANY}. 🤖`;
+        await send.sendTextMessage(sender, text2);
+    },
+    'input.corona': async (sender) => {
+        await send.sendTypingOn(sender);
+        const text = 'Espero que esteja tudo bem!';
+        send.sendTextMessage(sender, text);
+
+        let buttons = [
+            {
+                type: 'postback',
+                title: 'Cancelar consulta',
+                payload: 'CANCEL_APPOINTMENT',
+            },
+            {
+                type:'web_url',
+                url:'https://coronavirus.saude.gov.br/',
+                title:'Informações COVID-19'
+            },
+        ];
+        await send.sendButtonMessage(sender, 'Tenho algumas sugestões sobre esse assunto.', buttons);
+    },
+    'input.plans': async (sender) => {
+        await send.sendTypingOn(sender);
+        const text = 'Infelizmente não possuímos convênios, mas acreditamos que podemos apresentar as melhores soluções para você!';
+        await send.sendTextMessage(sender, text);
+
+        let text2 = 'Agende sua avaliação sem compromisso! 😉';
+        let replies = [
+            {
+                'content_type': 'text',
+                'title': 'Agendar agora',
+                'payload': 'Agendar agora'
+            }
+        ];
+        await send.sendQuickReply(sender, text2, replies);
+
+    },
+    'input.recommendations': async (sender) => {
+        await send.sendTypingOn(sender);
+
+        const text = 'Nossa! De imediato já desejo uma boa recuperação 🙏.\nVeja as recomendações que temos disponíveis aqui.\nClick no card da recomendação que você está precisando 👇';
+        await send.sendTextMessage(sender, text);
+
+        let elements = [
+            {
+                title:'Lentes de contato',
+                image_url:'https://afetoodontologia.com.br/wp-content/uploads/elementor/thumbs/afeto-odontologia-lente-de-contato-opux763t0jnd31c6mnev3e4vwbgjayqwwwunthhte6.jpg',
+                subtitle:'As lentes de contato dental se tornaram as queridinhas das famosas e famosos que transformam os seus sorrisos através deste método.',
+                default_action: {
+                    type: 'web_url',
+                    url: 'https://consilio.com.br/',
                 },
-                {
-                    title:'Bruxismo',
-                    image_url:'https://afetoodontologia.com.br/wp-content/uploads/elementor/thumbs/topo-oop900sny7228bbfgnuad6ta0d0uaerpe3v5tbnmps.png',
-                    subtitle:'Na correria do dia a dia quando chegamos em casa o que mais queremos é relaxar e dormir.',
-                    default_action: {
-                        type: 'web_url',
-                        url: 'https://consilio.com.br/',
-                    },
-                    buttons: [{
-                        type: 'postback',
-                        title: 'Agendar consulta',
-                        payload: 'SCHEDULE_APPOINTMENT',
-                    }]      
+                buttons: [{
+                    type: 'postback',
+                    title: 'Agendar consulta',
+                    payload: 'SCHEDULE_APPOINTMENT',
+                }]      
+            },
+            {
+                title:'Bruxismo',
+                image_url:'https://afetoodontologia.com.br/wp-content/uploads/elementor/thumbs/topo-oop900sny7228bbfgnuad6ta0d0uaerpe3v5tbnmps.png',
+                subtitle:'Na correria do dia a dia quando chegamos em casa o que mais queremos é relaxar e dormir.',
+                default_action: {
+                    type: 'web_url',
+                    url: 'https://consilio.com.br/',
                 },
-                {
-                    title:'Siso',
-                    image_url:'https://afetoodontologia.com.br/wp-content/uploads/elementor/thumbs/cirurgia-siso-onojy8ieoywu8k2ji5ddwg6wle355k04160892ty24.png',
-                    subtitle:'Os cuidados pós-operatórios são muito importantes, pois eles garantem uma boa recuperação e cicatrização.',
-                    default_action: {
-                        type: 'web_url',
-                        url: 'https://consilio.com.br/',
-                    },
-                    buttons: [{
-                        type: 'postback',
-                        title: 'Agendar consulta',
-                        payload: 'SCHEDULE_APPOINTMENT',
-                    }]      
+                buttons: [{
+                    type: 'postback',
+                    title: 'Agendar consulta',
+                    payload: 'SCHEDULE_APPOINTMENT',
+                }]      
+            },
+            {
+                title:'Siso',
+                image_url:'https://afetoodontologia.com.br/wp-content/uploads/elementor/thumbs/cirurgia-siso-onojy8ieoywu8k2ji5ddwg6wle355k04160892ty24.png',
+                subtitle:'Os cuidados pós-operatórios são muito importantes, pois eles garantem uma boa recuperação e cicatrização.',
+                default_action: {
+                    type: 'web_url',
+                    url: 'https://consilio.com.br/',
                 },
-                {
-                    title:'Clareamento',
-                    image_url:'https://afetoodontologia.com.br/wp-content/uploads/elementor/thumbs/recomenda%C3%A7%C3%A3o-pos-clareamento-dent%C3%A1rio-ooqmhelg4xmx83rbfoassnvqqst800qkb4wi1mdqkg.png',
-                    subtitle:'Após realizar um clareamento dentário os dentes estão mais sensíveis e suscetíveis a manchas.',
-                    default_action: {
-                        type: 'web_url',
-                        url: 'https://consilio.com.br/',
-                    },
-                    buttons: [{
-                        type: 'postback',
-                        title: 'Agendar consulta',
-                        payload: 'SCHEDULE_APPOINTMENT',
-                    }]      
+                buttons: [{
+                    type: 'postback',
+                    title: 'Agendar consulta',
+                    payload: 'SCHEDULE_APPOINTMENT',
+                }]      
+            },
+            {
+                title:'Clareamento',
+                image_url:'https://afetoodontologia.com.br/wp-content/uploads/elementor/thumbs/recomenda%C3%A7%C3%A3o-pos-clareamento-dent%C3%A1rio-ooqmhelg4xmx83rbfoassnvqqst800qkb4wi1mdqkg.png',
+                subtitle:'Após realizar um clareamento dentário os dentes estão mais sensíveis e suscetíveis a manchas.',
+                default_action: {
+                    type: 'web_url',
+                    url: 'https://consilio.com.br/',
                 },
-                {
-                    title:'Aparelho ortodôntico',
-                    image_url:'https://afetoodontologia.com.br/wp-content/uploads/elementor/thumbs/Ortodontia_1-onojhdao1ztlwgkjzuwe5pf4uh81131idokk8bu9po.png',
-                    subtitle:'Quem faz um tratamento ortodôntico almeja ter os dentes alinhados e aquele sorriso dos sonhos.',
-                    default_action: {
-                        type: 'web_url',
-                        url: 'https://consilio.com.br/',
-                    },
-                    buttons: [{
-                        type: 'postback',
-                        title: 'Agendar consulta',
-                        payload: 'SCHEDULE_APPOINTMENT',
-                    }]      
-                }
-            ];
-            send.sendGenericMessage(sender, elements);
-        }, 2000);
+                buttons: [{
+                    type: 'postback',
+                    title: 'Agendar consulta',
+                    payload: 'SCHEDULE_APPOINTMENT',
+                }]      
+            },
+            {
+                title:'Aparelho ortodôntico',
+                image_url:'https://afetoodontologia.com.br/wp-content/uploads/elementor/thumbs/Ortodontia_1-onojhdao1ztlwgkjzuwe5pf4uh81131idokk8bu9po.png',
+                subtitle:'Quem faz um tratamento ortodôntico almeja ter os dentes alinhados e aquele sorriso dos sonhos.',
+                default_action: {
+                    type: 'web_url',
+                    url: 'https://consilio.com.br/',
+                },
+                buttons: [{
+                    type: 'postback',
+                    title: 'Agendar consulta',
+                    payload: 'SCHEDULE_APPOINTMENT',
+                }]      
+            }
+        ];
+        await send.sendGenericMessage(sender, elements);
     },
     'talk.human': async (sender) => {
-        send.sendTypingOn(sender);
+        await send.sendTypingOn(sender);
         const userDB = await Leads.findOne({ where: { sender_id: sender } });
         facebookAPI.sendPassThread(sender);
         smsAPI.textMessageService.send(sender, 'Verifique sua caixa de entrada do Messenger, estão chamando por você.', ['5562983465454'], data => console.log('SMS API CALL: ', data));
-        setTimeout(function() {
-            const text = `Tudo bem ${userDB.first_name}. 👌 \nEstou te transferindo para um dos nossos atendentes humanos. Aguarde que logo ele irá aparecer...`;
-            send.sendTextMessage(sender, text);
-        }, 1000);
+
+        const text = `Tudo bem ${userDB.first_name}. 👌 \nEstou te transferindo para um dos nossos atendentes humanos. Aguarde que logo ele irá aparecer...`;
+        await send.sendTextMessage(sender, text);
     },
-    'input.unknown': (sender, messages) => {
-        send.sendTypingOn(sender);
+    'input.unknown': async (sender, messages) => {
+        await send.sendTypingOn(sender);
         handleMessages(messages, sender);
-        setTimeout(function() {
-            let text = 'Opps, talvez eu não tenha aprendido o suficiente. 😔 \n\nPodemos tentar de novo, ou se preferir falar com um dos nossos humanos disponíveis. 💜';
-            let replies = [
-                {
-                    'content_type': 'text',
-                    'title': 'Falar com humano',
-                    'payload': 'Falar com humano'
-                }
-            ];
-            send.sendQuickReply(sender, text, replies);
-        }, 1000);
+
+        let text = 'Opps, talvez eu não tenha aprendido o suficiente. 😔 \n\nPodemos tentar de novo, ou se preferir falar com um dos nossos humanos disponíveis. 💜';
+        let replies = [
+            {
+                'content_type': 'text',
+                'title': 'Falar com humano',
+                'payload': 'Falar com humano'
+            }
+        ];
+        await send.sendQuickReply(sender, text, replies);
     },
-    'default': (sender, messages) => {
-        send.sendTypingOn(sender);
+    'default': async (sender, messages) => {
+        await send.sendTypingOn(sender);
         handleMessages(messages, sender);
     }
 };
@@ -1281,8 +1205,8 @@ const receivedPbObj = {
     'get_started': (senderID, payload) => {
         dialogflowAPI.sendTextToDialogFlow(senderID, payload);
     },
-    'VIEW_SITE': (senderID, payload) => {
-        send.sendTextMessage(senderID, payload);
+    'VIEW_SITE': async (senderID, payload) => {
+        await send.sendTextMessage(senderID, payload);
     },
     'SCHEDULE_APPOINTMENT': (senderID) => {
         dialogflowAPI.sendEventToDialogFlow(senderID, 'schedule');
@@ -1290,8 +1214,8 @@ const receivedPbObj = {
     'CANCEL_APPOINTMENT': (senderID) => {
         dialogflowAPI.sendEventToDialogFlow(senderID, 'schedule_cancel');
     },
-    'DEFAULT': (senderID, payload) => {
-        send.sendTextMessage(senderID, payload);
+    'DEFAULT': async (senderID, payload) => {
+        await send.sendTextMessage(senderID, payload);
     }
 };
 const receivedPostback = event => {

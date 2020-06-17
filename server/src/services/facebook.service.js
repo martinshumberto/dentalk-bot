@@ -9,46 +9,51 @@ import Leads from '../models/Lead';
  * @param {*} callback
  */
 const sendCall = async (callback, i) => {
-    request(
-        {
-            uri: `${config.mPlatfom}/me/messages`,
-            qs: {
-                access_token: config.FB_PAGE_ACCESS_TOKEN
+    return new Promise((resolve, reject) => {
+        request(
+            {
+                uri: `${config.mPlatfom}/me/messages`,
+                qs: {
+                    access_token: config.FB_PAGE_ACCESS_TOKEN
+                },
+                method: 'POST',
+                json: callback
             },
-            method: 'POST',
-            json: callback
-        },
-        function(error, response, body) {
-            if (!error && response.statusCode == 200) {
-                let recipientId = body.recipient_id;
-                let messageId = body.message_id;
+            function (error, response, body) {
+                if (!error && response.statusCode == 200) {
+                    let recipientId = body.recipient_id;
+                    let messageId = body.message_id;
 
-                utils.setSessionandUser(recipientId);
+                    utils.setSessionandUser(recipientId);
 
-                if(i < callback.length) sendCall(callback, i+1 );
+                    if (i < callback.length) sendCall(callback, i + 1);
                 
-                if (messageId) {
-                    console.log(
-                        '⚡️ [BOT CONSILIO] Successfully sent message with id %s to recipient %s',
-                        messageId,
-                        recipientId
-                    );
+                    if (messageId) {
+                        console.log(
+                            '⚡️ [BOT CONSILIO] Successfully sent message with id %s to recipient %s',
+                            messageId,
+                            recipientId
+                        );
+                        return resolve(response);
+                    } else {
+                        console.log(
+                            '⚡️ [BOT CONSILIO] Successfully called Send API for recipient %s',
+                            recipientId
+                        );
+                        return resolve(response);
+                    }
                 } else {
-                    console.log(
-                        '⚡️ [BOT CONSILIO] Successfully called Send API for recipient %s',
-                        recipientId
+                    console.error(
+                        '❌ [BOT CONSILIO] Failed calling Send API',
+                        response.statusCode,
+                        response.statusMessage,
+                        body.error
                     );
+                    return reject(response.body.error);
                 }
-            } else {
-                console.error(
-                    '❌ [BOT CONSILIO] Failed calling Send API',
-                    response.statusCode,
-                    response.statusMessage,
-                    body.error
-                );
             }
-        }
-    );
+        );
+    });
 };
 
 const sendPassThread = (senderID) => {

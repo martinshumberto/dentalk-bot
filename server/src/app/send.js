@@ -38,7 +38,7 @@ const sendTypingOff = recipientId => {
  * @param {Number} recipientId
  * @param {String} text
  */
-const sendTextMessage = (recipientId, text) => {
+const sendTextMessage = async (recipientId, text) => {
     var messageData = {
         recipient: {
             id: recipientId
@@ -47,7 +47,7 @@ const sendTextMessage = (recipientId, text) => {
             text: text
         }
     };
-    facebookAPI.sendCall(messageData, 0);
+    await facebookAPI.sendCall(messageData, 0);
 };
 
 /**
@@ -56,7 +56,7 @@ const sendTextMessage = (recipientId, text) => {
  * @param {String} text
  * @param {Number} persona_id
  */
-const sendTextWithPersona = (recipientId, text, persona_id) => {
+const sendTextWithPersona = async (recipientId, text, persona_id) => {
     var messageData = {
         recipient: {
             id: recipientId
@@ -66,14 +66,14 @@ const sendTextWithPersona = (recipientId, text, persona_id) => {
             persona_id: persona_id
         }
     };
-    facebookAPI.sendCall(messageData, 0);
+    await facebookAPI.sendCall(messageData, 0);
 };
 
 /*
      * Send a Gif using the Send API.
      *
      */
-const sendGifMessage = (recipientId, GifName) => {
+const sendGifMessage = async (recipientId, GifName) => {
     var messageData = {
         recipient: {
             id: recipientId
@@ -87,15 +87,14 @@ const sendGifMessage = (recipientId, GifName) => {
             }
         }
     };
-
-    facebookAPI.sendCall(messageData, 0);
+    await facebookAPI.sendCall(messageData, 0);
 };
 
 /*
      * Send a image using the Send API.
      *
      */
-const sendImageMessage = (recipientId, imageName) => {
+const sendImageMessage = async (recipientId, imageName) => {
     var messageData = {
         recipient: {
             id: recipientId
@@ -110,7 +109,7 @@ const sendImageMessage = (recipientId, imageName) => {
         }
     };
 
-    facebookAPI.sendCall(messageData, 0);
+    await facebookAPI.sendCall(messageData, 0);
 };
 
 /**
@@ -118,7 +117,7 @@ const sendImageMessage = (recipientId, imageName) => {
  * @param {Number} recipientId
  * @param {String} text
  */
-const sendQuickReply = (recipientId, text, replies, metadata) => {
+const sendQuickReply = async (recipientId, text, replies, metadata) => {
     var messageData = {
         recipient: {
             id: recipientId
@@ -129,15 +128,14 @@ const sendQuickReply = (recipientId, text, replies, metadata) => {
             quick_replies: replies
         }
     };
-
-    facebookAPI.sendCall(messageData, 0);
+    await facebookAPI.sendCall(messageData, 0);
 };
 
 /*
      * Send a button message using the Send API.
      *
      */
-const sendButtonMessage = (recipientId, text, buttons) => {
+const sendButtonMessage = async (recipientId, text, buttons) => {
     var messageData = {
         recipient: {
             id: recipientId
@@ -153,8 +151,7 @@ const sendButtonMessage = (recipientId, text, buttons) => {
             }
         }
     };
-
-    facebookAPI.sendCall(messageData, 0);
+    await facebookAPI.sendCall(messageData, 0);
 };
 
 /**
@@ -162,7 +159,7 @@ const sendButtonMessage = (recipientId, text, buttons) => {
  * @param {Number} recipientId
  * @param {Object} elements
  */
-const sendGenericMessage = (recipientId, elements) => {
+const sendGenericMessage = async (recipientId, elements) => {
     var messageData = {
         recipient: {
             id: recipientId
@@ -177,7 +174,7 @@ const sendGenericMessage = (recipientId, elements) => {
             }
         }
     };
-    facebookAPI.sendCall(messageData, 0);
+    await facebookAPI.sendCall(messageData, 0);
 };
 
 export default {
