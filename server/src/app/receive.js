@@ -987,7 +987,7 @@ const handleDFAObj = {
         const text = 'Desculpe por não me apresentar! 😬';
         await send.sendTextMessage(sender, text);
 
-        const text2 = `Eu sou a Lary, atendente virtual da ${config.NAME_COMPANY}. 🤖`;
+        const text2 = `Eu sou a ${config.NAME_BOT}, atendente virtual da ${config.NAME_COMPANY}. 🤖`;
         await send.sendTextMessage(sender, text2);
     },
     'input.corona': async (sender) => {
