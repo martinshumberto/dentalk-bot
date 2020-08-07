@@ -293,7 +293,7 @@ const handleDFAObj = {
             else if (missingSlots.length === 2) {
                 
                 await send.sendTextMessage(sender, `Oi ${user.first_name}! 👋`);
-                await send.sendTextMessage(sender, 'Sou a Lary, a atendente virtual 🤖 da Clínica Dentalk!');
+                await send.sendTextMessage(sender, `Sou a ${config.NAME_BOT}, a atendente virtual 🤖 da ${config.NAME_COMPANY}!`);
                 await send.sendTextMessage(sender, 'Aqui acreditamos que sorrisos renovados transformam vidas!');
                 let replies = [
                     {

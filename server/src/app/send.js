@@ -131,10 +131,10 @@ const sendQuickReply = async (recipientId, text, replies, metadata) => {
     await facebookAPI.sendCall(messageData, 0);
 };
 
-/*
-     * Send a button message using the Send API.
-     *
-     */
+/**
+ * Send a button message using the Send API.
+ *
+ */
 const sendButtonMessage = async (recipientId, text, buttons) => {
     var messageData = {
         recipient: {

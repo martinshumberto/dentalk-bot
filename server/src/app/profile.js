@@ -66,22 +66,6 @@ export default {
             composer_input_disabled: false,
             call_to_actions: [
                 {
-                    title: 'Atendimento',
-                    type: 'nested',
-                    call_to_actions: [
-                        {
-                            title: 'Menu 1',
-                            type: 'postback',
-                            payload: 'Lorem ipsum'
-                        },
-                    ]
-                },
-                {
-                    title: 'E-book gratuito',
-                    type: 'postback',
-                    payload: 'CARE_HELP'
-                },
-                {
                     type: 'web_url',
                     title: 'Acessar site',
                     url: config.SITE_URL,
