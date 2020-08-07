@@ -23,10 +23,10 @@ services:
     container_name: dentalk-node
     restart: always
     env_file: .env
-    depends_on: 
-      - db
     environment: 
       NODE_ENV: development
+    depends_on: 
+      - db
     ports:
       - ${PORT}:${PORT}
     volumes:
