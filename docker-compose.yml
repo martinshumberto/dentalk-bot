@@ -1,19 +1,6 @@
 version: "3.3"
 
 services:
-  https-portal:
-    image: steveltn/https-portal:1
-    ports:
-      - '80:80'
-      - '443:443'
-    links:
-      - app
-    restart: always
-    environment:
-      DOMAINS: '${DOMAIN} -> http://app:${PORT}/'
-      STAGE: production
-      FORCE_RENEW: 'false'
-
   db:
     image: mysql:5.7
     container_name: dentalk-mysql

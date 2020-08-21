@@ -19,3 +19,8 @@ logs:
 
 dev:
 	docker-compose -f docker-compose-dev.yml up -d
+
+.PHONY: reset
+
+reset:
+	docker system prune -a
