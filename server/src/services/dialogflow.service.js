@@ -7,7 +7,7 @@ import structjson from '../utils/structjson';
 
 const credentials = {
     credentials: {
-        private_key: JSON.parse(config.GOOGLE_PRIVATE_KEY),
+        private_key: process.env.NODE_ENV === 'development' ? config.GOOGLE_PRIVATE_KEY : JSON.parse(config.GOOGLE_PRIVATE_KEY),
         client_email: config.GOOGLE_CLIENT_EMAIL
     }
 };
