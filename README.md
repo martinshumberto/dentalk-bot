@@ -15,4 +15,4 @@ npm start
 
 ## Author
 
-- Humberto Martins (Consilio)
+- Humberto Martins
